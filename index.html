@@ -1,710 +1,287 @@
 <!DOCTYPE html>
 <html lang="nl">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Uitleenprogramma</title>
-    <style>
-        /* Tailwind CSS CDN is verwijderd, de stijlen zijn inline geplaatst voor stabiliteit. */
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: #f0f4f8;
-            margin: 0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            min-height: 100vh;
-        }
-        .container {
-            max-width: 1000px;
-            margin: 0 auto;
-            padding: 2rem;
-        }
-        .input-container {
-            display: flex;
-            flex-direction: column;
-            gap: 1rem;
-            margin-bottom: 2rem;
-        }
-        .user-name-container {
-            position: absolute;
-            top: 1rem;
-            left: 1rem;
-            background-color: #e2e8f0;
-            padding: 0.5rem 1rem;
-            border-radius: 9999px;
-            font-size: 0.875rem;
-            color: #4a5568;
-            border: 1px solid #cbd5e1;
-        }
-        .logout-btn {
-            position: absolute;
-            top: 1rem;
-            right: 1rem;
-            background-color: #dc2626;
-            color: white;
-            padding: 0.5rem 1rem;
-            border-radius: 9999px;
-            font-size: 0.875rem;
-            cursor: pointer;
-            transition: background-color 0.2s;
-        }
-        .logout-btn:hover {
-            background-color: #b91c1c;
-        }
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        .fade-in {
-            animation: fadeIn 0.5s ease-out;
-        }
-        .user-message {
-            padding: 0.75rem 1.5rem;
-            border-radius: 9999px;
-            font-size: 1rem;
-            color: white;
-            text-align: center;
-            margin-top: 1.5rem;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            animation: fadeIn 0.3s ease-in-out;
-            transition: all 0.3s ease-in-out;
-        }
-        .loan-list-container {
-            max-height: 500px;
-            overflow-y: auto;
-            border-radius: 12px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        }
-        .loader {
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid #3b82f6;
-            border-radius: 50%;
-            width: 24px;
-            height: 24px;
-            animation: spin 1s linear infinite;
-        }
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-        /* Tailwind Klassen omgezet naar standaard CSS-regels */
-        .bg-gray-100 { background-color: #f3f4f6; }
-        .bg-white { background-color: #ffffff; }
-        .p-8 { padding: 2rem; }
-        .rounded-2xl { border-radius: 1rem; }
-        .shadow-xl { box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04); }
-        .w-full { width: 100%; }
-        .max-w-4xl { max-width: 56rem; }
-        .mx-4 { margin-left: 1rem; margin-right: 1rem; }
-        .text-4xl { font-size: 2.25rem; }
-        .font-extrabold { font-weight: 800; }
-        .text-gray-800 { color: #1f2937; }
-        .mb-6 { margin-bottom: 1.5rem; }
-        .text-center { text-align: center; }
-        .text-gray-600 { color: #4b5563; }
-        .mb-8 { margin-bottom: 2rem; }
-        .flex-row { flex-direction: row; }
-        .justify-center { justify-content: center; }
-        .items-center { align-items: center; }
-        .flex-1 { flex: 1; }
-        .px-5 { padding-left: 1.25rem; padding-right: 1.25rem; }
-        .py-3 { padding-top: 0.75rem; padding-bottom: 0.75rem; }
-        .border { border-width: 1px; }
-        .border-gray-300 { border-color: #d1d5db; }
-        .rounded-xl { border-radius: 0.75rem; }
-        .shadow-sm { box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05); }
-        .focus-outline-none:focus { outline: 0; }
-        .focus-ring-2:focus { box-shadow: 0 0 0 2px #3b82f6; }
-        .focus-border-blue-500:focus { border-color: #3b82f6; }
-        .transition { transition-property: all; transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1); transition-duration: 150ms; }
-        .bg-blue-600 { background-color: #2563eb; }
-        .hover-bg-blue-700:hover { background-color: #1d4ed8; }
-        .text-white { color: #ffffff; }
-        .font-bold { font-weight: 700; }
-        .px-6 { padding-left: 1.5rem; padding-right: 1.5rem; }
-        .shadow-md { box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); }
-        .hidden { display: none; }
-        .flex { display: flex; }
-        .mb-4 { margin-bottom: 1rem; }
-        .ml-2 { margin-left: 0.5rem; }
-        .relative { position: relative; }
-        .pr-32 { padding-right: 8rem; }
-        .absolute { position: absolute; }
-        .right-2 { right: 0.5rem; }
-        .top-1/2 { top: 50%; }
-        .-translate-y-1/2 { transform: translateY(-50%); }
-        .bg-gray-200 { background-color: #e5e7eb; }
-        .hover-bg-gray-300:hover { background-color: #d1d5db; }
-        .text-gray-700 { color: #374151; }
-        .font-medium { font-weight: 500; }
-        .py-1\\.5 { padding-top: 0.375rem; padding-bottom: 0.375rem; }
-        .px-3 { padding-left: 0.75rem; padding-right: 0.75rem; }
-        .text-sm { font-size: 0.875rem; }
-        .mt-8 { margin-top: 2rem; }
-        .justify-between { justify-content: space-between; }
-        .text-2xl { font-size: 1.5rem; }
-        .font-semibold { font-weight: 600; }
-        .py-2 { padding-top: 0.5rem; padding-bottom: 0.5rem; }
-        .px-4 { padding-left: 1rem; padding-right: 1rem; }
-        .bg-gray-50 { background-color: #f9fafb; }
-        .border-gray-200 { border-color: #e5e7eb; }
-        .p-4 { padding: 1rem; }
-        .min-w-full { min-width: 100%; }
-        .rounded-lg { border-radius: 0.5rem; }
-        .overflow-hidden { overflow: hidden; }
-        .bg-blue-600 { background-color: #2563eb; }
-        .text-white { color: #ffffff; }
-        .py-3 { padding-top: 0.75rem; padding-bottom: 0.75rem; }
-        .px-6 { padding-left: 1.5rem; padding-right: 1.5rem; }
-        .text-left { text-align: left; }
-        .font-semibold { font-weight: 600; }
-        .divide-y > * + * { border-top-width: 1px; }
-        .divide-gray-200 > * + * { border-top-color: #e5e7eb; }
-        .hover-bg-gray-100:hover { background-color: #f3f4f6; }
-        .mt-4 { margin-top: 1rem; }
-        .text-gray-500 { color: #6b7280; }
-        .bg-gray-500 { background-color: #6b7280; }
-        .hover-bg-gray-600:hover { background-color: #4b5563; }
-        .p-6 { padding: 1.5rem; }
-        .border-gray-200 { border-color: #e5e7eb; }
-        .flex-col { flex-direction: column; }
-        .md-flex-row { flex-direction: row; }
-        .md-w-1/2 { width: 50%; }
-        .bg-green-600 { background-color: #16a34a; }
-        .hover-bg-green-700:hover { background-color: #15803d; }
-        .bg-red-500 { background-color: #ef4444; }
-
-        /* Print-specifieke stijlen */
-        @media print {
-            body {
-                background-color: white;
-            }
-            .no-print {
-                display: none !important;
-            }
-            .loan-list-container {
-                box-shadow: none;
-                border: none;
-            }
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Uitleenprogramma</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      background-color: #f0f4f8;
+      margin: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+    }
+    .container {
+      max-width: 1000px;
+      margin: 0 auto;
+      padding: 2rem;
+      background: white;
+      border-radius: 1rem;
+      box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+      width: 100%;
+    }
+    .hidden { display: none; }
+    .user-message {
+      margin-top: 1rem;
+      padding: 0.75rem 1.25rem;
+      border-radius: 0.75rem;
+      color: white;
+    }
+    .bg-red-500 { background-color: #ef4444; }
+    .bg-green-500 { background-color: #16a34a; }
+    .bg-yellow-500 { background-color: #facc15; color: black; }
+    .bg-blue-500 { background-color: #3b82f6; }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 1rem;
+    }
+    th, td {
+      padding: 0.5rem 0.75rem;
+      border-bottom: 1px solid #ddd;
+      text-align: left;
+    }
+    th { background: #2563eb; color: white; }
+    tr:hover { background: #f3f4f6; }
+    button {
+      padding: 0.5rem 1rem;
+      border: none;
+      border-radius: 0.5rem;
+      cursor: pointer;
+      font-weight: bold;
+      margin-left: 0.25rem;
+    }
+    .btn-blue { background: #2563eb; color: white; }
+    .btn-red { background: #ef4444; color: white; }
+    .btn-gray { background: #6b7280; color: white; }
+  </style>
 </head>
-<body class="bg-gray-100 flex items-center justify-center min-h-screen">
-    <div class="relative bg-white p-8 rounded-2xl shadow-xl w-full max-w-4xl mx-4">
-        <div id="userIdDisplay" class="user-name-container no-print hidden"></div>
-        <!-- Landing View -->
-        <div id="landingView">
-            <h1 class="text-4xl font-extrabold text-gray-800 mb-6 text-center">Uitleenprogramma</h1>
-            <p class="text-center text-gray-600 mb-8">Scan je barcode om te beginnen.</p>
-            <div class="input-container flex-row justify-center items-center">
-                <input type="text" id="initialBarcodeInput" autofocus
-                       class="flex-1 w-full px-5 py-3 border border-gray-300 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-200"
-                       placeholder="Scan hier je leerling- of docentbarcode...">
-                <button id="initialStartButton" class="bg-blue-600 hover-bg-blue-700 text-white font-bold py-3 px-6 rounded-xl shadow-md transition-colors duration-200">
-                    Start
-                </button>
-            </div>
-            <div id="initialStatusMessage" class="hidden user-message"></div>
-            <div id="loadingIndicatorLanding" class="flex justify-center items-center mb-4 hidden no-print">
-                <div class="loader"></div>
-                <span class="ml-2 text-gray-600">Laden...</span>
-            </div>
-        </div>
-
-        <!-- Student View -->
-        <div id="studentView" class="hidden">
-            <button id="logoutButton" class="logout-btn no-print">Uitloggen</button>
-            <h1 class="text-4xl font-extrabold text-gray-800 mb-6 text-center no-print">Uitleenprogramma</h1>
-            <p class="text-center text-gray-600 mb-8 no-print">Scan een barcode om te beginnen.</p>
-    
-            <div class="input-container no-print">
-                <div class="relative">
-                    <input type="text" id="barcodeInput"
-                           class="w-full px-5 py-3 border border-gray-300 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-200 pr-32"
-                           placeholder="Scan hier de barcode van het item...">
-                    <button id="clearStudentButton" class="absolute right-2 top-1/2 -translate-y-1/2 bg-gray-200 hover-bg-gray-300 text-gray-700 font-medium py-1.5 px-3 rounded-xl transition-colors duration-200 text-sm">
-                        Wis Leerling
-                    </button>
-                </div>
-                <div id="statusMessage" class="hidden user-message"></div>
-            </div>
-    
-            <div id="loadingIndicatorStudent" class="flex justify-center items-center mb-4 hidden no-print">
-                <div class="loader"></div>
-                <span class="ml-2 text-gray-600">Laden...</span>
-            </div>
-            
-            <div class="mt-8">
-                <div class="flex items-center justify-between mb-4 no-print">
-                    <h2 class="text-2xl font-bold text-gray-800">Uitgeleende Items</h2>
-                    <button id="printButton" class="bg-gray-500 hover-bg-gray-600 text-white font-semibold py-2 px-4 rounded-xl shadow-md transition-colors duration-200">
-                        Afdrukken
-                    </button>
-                </div>
-                
-                <div id="loanListPrintable" class="loan-list-container bg-gray-50 border border-gray-200 p-4">
-                    <table class="min-w-full bg-white rounded-lg overflow-hidden">
-                        <thead class="bg-blue-600 text-white">
-                            <tr>
-                                <th class="py-3 px-6 text-left font-semibold">Artikel</th>
-                                <th class="py-3 px-6 text-left font-semibold">Leerling</th>
-                                <th class="py-3 px-6 text-left font-semibold">Datum</th>
-                                <th class="py-3 px-6 text-left font-semibold">ID</th>
-                            </tr>
-                        </thead>
-                        <tbody id="loanTableBody" class="divide-y divide-gray-200">
-                            <!-- Loan items will be rendered here -->
-                        </tbody>
-                    </table>
-                    <div id="noLoansMessage" class="mt-4 text-center text-gray-500 hidden">
-                        Er zijn momenteel geen items uitgeleend.
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Teacher View (initially hidden) -->
-        <div id="teacherView" class="hidden no-print">
-            <button id="logoutButtonTeacher" class="logout-btn no-print">Uitloggen</button>
-            <h1 class="text-4xl font-extrabold text-gray-800 mb-6 text-center">Docentenpaneel</h1>
-            <p class="text-center text-gray-600 mb-8">Beheer items en leerlingen.</p>
-
-            <div class="mt-8 p-6 bg-white rounded-2xl shadow-xl border border-gray-200">
-                <h2 class="text-2xl font-bold text-gray-800 mb-4">Nieuw Item Toevoegen</h2>
-                <div class="flex flex-col md:flex-row gap-4">
-                    <input type="text" id="newItemBarcodeInput"
-                           class="w-full md-w-1/2 px-4 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-200"
-                           placeholder="Barcode van het nieuwe item...">
-                    <input type="text" id="newItemNameInput"
-                           class="w-full md-w-1/2 px-4 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-200"
-                           placeholder="Naam van het nieuwe item...">
-                </div>
-                <button id="addItemButton"
-                        class="mt-4 w-full bg-blue-600 hover-bg-blue-700 text-white font-bold py-3 rounded-xl shadow-md transition-colors duration-200">
-                    Item Toevoegen
-                </button>
-                <div id="addItemStatusMessage" class="hidden user-message mt-4"></div>
-            </div>
-
-            <div class="mt-8 p-6 bg-white rounded-2xl shadow-xl border border-gray-200">
-                <h2 class="text-2xl font-bold text-gray-800 mb-4">Nieuwe Leerling Toevoegen</h2>
-                <div class="flex flex-col md:flex-row gap-4">
-                    <input type="text" id="newStudentBarcodeInput"
-                           class="w-full md-w-1/2 px-4 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-200"
-                           placeholder="Barcode van de nieuwe leerling...">
-                    <input type="text" id="newStudentNameInput"
-                           class="w-full md-w-1/2 px-4 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-200"
-                           placeholder="Naam van de nieuwe leerling...">
-                </div>
-                <button id="addStudentButton"
-                        class="mt-4 w-full bg-green-600 hover-bg-green-700 text-white font-bold py-3 rounded-xl shadow-md transition-colors duration-200">
-                    Leerling Toevoegen
-                </button>
-                <div id="addStudentStatusMessage" class="hidden user-message mt-4 bg-red-500"></div>
-            </div>
-        </div>
-
+<body>
+  <div class="container">
+    <!-- Landing View -->
+    <div id="landingView">
+      <h1>Uitleenprogramma</h1>
+      <p>Scan je barcode om te beginnen.</p>
+      <input type="text" id="initialBarcodeInput" placeholder="Scan leerling- of docentbarcode..." />
+      <button id="initialStartButton" class="btn-blue">Start</button>
+      <div id="initialStatusMessage" class="hidden user-message"></div>
     </div>
 
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-        import { getAuth, signInWithCustomToken, signInAnonymously } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-        import { getFirestore, doc, getDoc, setDoc, collection, query, onSnapshot, runTransaction, getDocs, addDoc, deleteDoc, getDocFromCache } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-        import { setLogLevel } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+    <!-- Student View -->
+    <div id="studentView" class="hidden">
+      <button id="logoutButton" class="btn-red">Uitloggen</button>
+      <h2>Studentenpaneel</h2>
+      <p id="userIdDisplay"></p>
+      <input type="text" id="barcodeInput" placeholder="Scan itembarcode..." />
+      <button id="clearStudentButton" class="btn-gray">Wis leerling</button>
+      <div id="statusMessage" class="hidden user-message"></div>
+      <h3>Uitgeleende items</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>Artikel</th>
+            <th>Leerling</th>
+            <th>Datum</th>
+            <th>Barcode</th>
+          </tr>
+        </thead>
+        <tbody id="loanTableBody"></tbody>
+      </table>
+      <div id="noLoansMessage" class="hidden">Er zijn momenteel geen items uitgeleend.</div>
+      <button id="printButton" class="btn-gray">Afdrukken</button>
+    </div>
 
-        // De Firebase-configuratie en app-ID worden automatisch verstrekt door de omgeving.
-        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : null;
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
-        
-        // UI Elements
-        const landingView = document.getElementById('landingView');
-        const studentView = document.getElementById('studentView');
-        const teacherView = document.getElementById('teacherView');
-        const initialBarcodeInput = document.getElementById('initialBarcodeInput');
-        const initialStatusMessage = document.getElementById('initialStatusMessage');
-        const barcodeInput = document.getElementById('barcodeInput');
-        const statusMessage = document.getElementById('statusMessage');
-        const loanTableBody = document.getElementById('loanTableBody');
-        const noLoansMessage = document.getElementById('noLoansMessage');
-        const userIdDisplay = document.getElementById('userIdDisplay');
-        const loadingIndicatorLanding = document.getElementById('loadingIndicatorLanding');
-        const loadingIndicatorStudent = document.getElementById('loadingIndicatorStudent');
-        const initialStartButton = document.getElementById('initialStartButton');
-        const newItemBarcodeInput = document.getElementById('newItemBarcodeInput');
-        const newItemNameInput = document.getElementById('newItemNameInput');
-        const addItemButton = document.getElementById('addItemButton');
-        const addItemStatusMessage = document.getElementById('addItemStatusMessage');
-        const newStudentBarcodeInput = document.getElementById('newStudentBarcodeInput');
-        const newStudentNameInput = document.getElementById('newStudentNameInput');
-        const addStudentButton = document.getElementById('addStudentButton');
-        const addStudentStatusMessage = document.getElementById('addStudentStatusMessage');
-        const clearStudentButton = document.getElementById('clearStudentButton');
-        const printButton = document.getElementById('printButton');
-        const logoutButtonStudent = document.getElementById('logoutButton');
-        const logoutButtonTeacher = document.getElementById('logoutButtonTeacher');
-        
-        // State variables
-        let currentUser = null;
-        let isProcessing = false;
-        let currentView = 'landing';
-        
-        // Firebase instances
-        let app, db, auth;
+    <!-- Teacher View -->
+    <div id="teacherView" class="hidden">
+      <button id="logoutButtonTeacher" class="btn-red">Uitloggen</button>
+      <h2>Docentenpaneel</h2>
+      <p id="teacherIdDisplay"></p>
+      <div>
+        <h3>Nieuw item toevoegen</h3>
+        <input type="text" id="newItemBarcodeInput" placeholder="Barcode..." />
+        <input type="text" id="newItemNameInput" placeholder="Naam..." />
+        <button id="addItemButton" class="btn-blue">Toevoegen</button>
+        <div id="addItemStatusMessage" class="hidden user-message"></div>
+      </div>
+      <div>
+        <h3>Nieuwe leerling toevoegen</h3>
+        <input type="text" id="newStudentBarcodeInput" placeholder="Barcode..." />
+        <input type="text" id="newStudentNameInput" placeholder="Naam..." />
+        <button id="addStudentButton" class="btn-blue">Toevoegen</button>
+        <div id="addStudentStatusMessage" class="hidden user-message"></div>
+      </div>
+    </div>
+  </div>
 
-        // Collections references
-        let studentsCollectionRef, itemsCollectionRef, loansCollectionRef, teachersCollectionRef;
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+    import { 
+      getFirestore, doc, getDoc, setDoc, collection, query, onSnapshot,
+      getDocs, addDoc, deleteDoc 
+    } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
-        // Authentication and user setup
-        async function authenticate() {
-            try {
-                if (initialAuthToken) {
-                    await signInWithCustomToken(auth, initialAuthToken);
-                } else {
-                    await signInAnonymously(auth);
-                }
-                currentUser = auth.currentUser;
-                console.log("Authentication successful, user ID:", currentUser.uid);
+    // 🔑 Firebase config
+    const firebaseConfig = {
+      apiKey: "AIzaSyBPJmJ736FjH8Uu0YmzyjiB5QVEsmjIftw",
+      authDomain: "uitleenprogramma.firebaseapp.com",
+      projectId: "uitleenprogramma",
+      storageBucket: "uitleenprogramma.firebasestorage.app",
+      messagingSenderId: "477005056123",
+      appId: "1:477005056123:web:84985f84f5598c3cbafade",
+      measurementId: "G-FB2KDV3H0W"
+    };
 
-                setupRealtimeListeners();
-            } catch (error) {
-                console.error("Authentication failed:", error);
-                showMessage('Fout bij authenticatie. Probeer het opnieuw.', 'bg-red-500');
-            }
-        }
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const auth = getAuth(app);
 
-        // View management
-        function showScreen(screen) {
-            landingView.classList.add('hidden');
-            studentView.classList.add('hidden');
-            teacherView.classList.add('hidden');
-            userIdDisplay.classList.add('hidden');
-            currentView = screen;
-            
-            if (screen === 'landing') {
-                landingView.classList.remove('hidden');
-                initialBarcodeInput.focus();
-            } else if (screen === 'student') {
-                studentView.classList.remove('hidden');
-                barcodeInput.focus();
-                barcodeInput.placeholder = "Scan hier de barcode van het item...";
-                userIdDisplay.classList.remove('hidden');
-            } else if (screen === 'teacher') {
-                teacherView.classList.remove('hidden');
-                userIdDisplay.classList.remove('hidden');
-            }
-        }
+    // Collection refs
+    const studentsRef = collection(db, "students");
+    const itemsRef = collection(db, "items");
+    const loansRef = collection(db, "loans");
+    const teachersRef = collection(db, "teachers");
 
-        // Realtime listeners
-        function setupRealtimeListeners() {
-            // Listen for changes in loans
-            const loansQuery = query(loansCollectionRef);
-            onSnapshot(loansQuery, (snapshot) => {
-                const loans = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                renderLoans(loans);
-            }, (error) => {
-                console.error("Error listening to loans:", error);
-            });
-        }
+    // UI refs
+    const landingView = document.getElementById("landingView");
+    const studentView = document.getElementById("studentView");
+    const teacherView = document.getElementById("teacherView");
+    const initialBarcodeInput = document.getElementById("initialBarcodeInput");
+    const initialStartButton = document.getElementById("initialStartButton");
+    const initialStatusMessage = document.getElementById("initialStatusMessage");
+    const barcodeInput = document.getElementById("barcodeInput");
+    const statusMessage = document.getElementById("statusMessage");
+    const loanTableBody = document.getElementById("loanTableBody");
+    const noLoansMessage = document.getElementById("noLoansMessage");
+    const userIdDisplay = document.getElementById("userIdDisplay");
+    const printButton = document.getElementById("printButton");
+    const logoutButton = document.getElementById("logoutButton");
+    const logoutButtonTeacher = document.getElementById("logoutButtonTeacher");
+    const newItemBarcodeInput = document.getElementById("newItemBarcodeInput");
+    const newItemNameInput = document.getElementById("newItemNameInput");
+    const addItemButton = document.getElementById("addItemButton");
+    const addItemStatusMessage = document.getElementById("addItemStatusMessage");
+    const newStudentBarcodeInput = document.getElementById("newStudentBarcodeInput");
+    const newStudentNameInput = document.getElementById("newStudentNameInput");
+    const addStudentButton = document.getElementById("addStudentButton");
+    const addStudentStatusMessage = document.getElementById("addStudentStatusMessage");
+    const clearStudentButton = document.getElementById("clearStudentButton");
 
-        // Render functions
-        function showMessage(message, colorClass, targetElement = statusMessage) {
-            targetElement.textContent = message;
-            targetElement.className = `user-message fade-in ${colorClass}`;
-            targetElement.classList.remove('hidden');
-            setTimeout(() => {
-                targetElement.classList.add('hidden');
-            }, 5000);
-        }
+    // State
+    function showMessage(msg, cls, target) {
+      target.textContent = msg;
+      target.className = "user-message " + cls;
+      target.classList.remove("hidden");
+      setTimeout(() => target.classList.add("hidden"), 3000);
+    }
+    function showScreen(screen) {
+      landingView.classList.add("hidden");
+      studentView.classList.add("hidden");
+      teacherView.classList.add("hidden");
+      if (screen === "landing") landingView.classList.remove("hidden");
+      if (screen === "student") studentView.classList.remove("hidden");
+      if (screen === "teacher") teacherView.classList.remove("hidden");
+    }
 
-        function renderLoans(loans) {
-            loanTableBody.innerHTML = '';
-            if (loans.length === 0) {
-                noLoansMessage.classList.remove('hidden');
-            } else {
-                noLoansMessage.classList.add('hidden');
-                loans.sort((a, b) => a.item_name.localeCompare(b.item_name));
-                loans.forEach(loan => {
-                    const row = document.createElement('tr');
-                    row.className = 'hover:bg-gray-100 transition-colors duration-200';
-                    row.innerHTML = `
-                        <td class="py-3 px-6 text-gray-700">${loan.item_name}</td>
-                        <td class="py-3 px-6 text-gray-700">${loan.student_name}</td>
-                        <td class="py-3 px-6 text-gray-700">${new Date(loan.loan_date).toLocaleDateString()}</td>
-                        <td class="py-3 px-6 text-gray-700 font-mono text-sm">${loan.item_barcode}</td>
-                    `;
-                    loanTableBody.appendChild(row);
-                });
-            }
-        }
-
-        // Core logic
-        async function handleInitialScan(barcode) {
-            console.log("Start scanning barcode...");
-            if (isProcessing) {
-                console.log("Processing already in progress, ignoring new input.");
-                return;
-            }
-            isProcessing = true;
-            loadingIndicatorLanding.classList.remove('hidden');
-            showMessage('Laden...', 'bg-gray-500', initialStatusMessage);
-
-            try {
-                console.log(`Searching for teacher with barcode: ${barcode}`);
-                const teacherDocRef = doc(teachersCollectionRef, barcode);
-                const teacherDoc = await getDoc(teacherDocRef);
-                
-                console.log(`Teacher document found: ${teacherDoc.exists()}`);
-                if (teacherDoc.exists()) {
-                    showScreen('teacher');
-                    showMessage(`Welkom, ${teacherDoc.data().name}!`, 'bg-green-500', initialStatusMessage);
-                    userIdDisplay.textContent = `${teacherDoc.data().name}`;
-                    return;
-                }
-                
-                console.log(`Searching for student with barcode: ${barcode}`);
-                const studentDocRef = doc(studentsCollectionRef, barcode);
-                const studentDoc = await getDoc(studentDocRef);
-                
-                console.log(`Student document found: ${studentDoc.exists()}`);
-                if (studentDoc.exists()) {
-                    localStorage.setItem('loggedInStudent', JSON.stringify({ barcode: barcode, name: studentDoc.data().name }));
-                    showScreen('student');
-                    showMessage(`Welkom, ${studentDoc.data().name}! Scan nu een item.`, 'bg-green-500', statusMessage);
-                    userIdDisplay.textContent = `${studentDoc.data().name}`;
-                    return;
-                }
-
-                console.log("Barcode not found in teacher or student collections.");
-                showMessage('Barcode niet gevonden. Probeer het opnieuw.', 'bg-red-500', initialStatusMessage);
-
-            } catch (error) {
-                console.error("Login error during initial scan:", error);
-                showMessage('Er is een onverwachte fout opgetreden. Probeer het opnieuw.', 'bg-red-500', initialStatusMessage);
-            } finally {
-                isProcessing = false;
-                loadingIndicatorLanding.classList.add('hidden');
-                initialBarcodeInput.value = '';
-                initialBarcodeInput.focus();
-                console.log("Initial scan process finished.");
-            }
-        }
-
-        async function handleItemTransaction(itemBarcode) {
-            if (isProcessing) {
-                console.log("Processing already in progress, ignoring new input.");
-                return;
-            }
-            isProcessing = true;
-            loadingIndicatorStudent.classList.remove('hidden');
-            showMessage('Laden...', 'bg-gray-500', statusMessage);
-            
-            try {
-                const loggedInStudent = JSON.parse(localStorage.getItem('loggedInStudent'));
-
-                if (!loggedInStudent) {
-                    showMessage('Scan eerst de barcode van een leerling om in te loggen.', 'bg-yellow-500');
-                    return;
-                }
-
-                const studentId = loggedInStudent.barcode;
-                const studentName = loggedInStudent.name;
-
-                // Check if the item exists
-                const itemDocRef = doc(itemsCollectionRef, itemBarcode);
-                const itemDoc = await getDoc(itemDocRef);
-                if (!itemDoc.exists()) {
-                    showMessage('Item niet gevonden. Een leerkracht moet het item toevoegen.', 'bg-red-500');
-                    return;
-                }
-                const itemName = itemDoc.data().name;
-
-                // Check if the item is already loaned out
-                const loansQuery = query(loansCollectionRef);
-                const loansSnapshot = await getDocs(loansQuery);
-                const existingLoan = loansSnapshot.docs.find(doc => doc.data().item_barcode === itemBarcode);
-                const isLoanedByCurrentUser = existingLoan && existingLoan.data().student_barcode === studentId;
-
-                if (existingLoan) {
-                    if (isLoanedByCurrentUser) {
-                        // Item is being returned by the same student
-                        await deleteDoc(doc(loansCollectionRef, existingLoan.id));
-                        showMessage(`Item '${itemName}' is succesvol ingeleverd.`, 'bg-green-500');
-                    } else {
-                        // Item is being returned by a different student or is already loaned out
-                        const currentLoanee = existingLoan.data().student_name;
-                        showMessage(`Dit item is al uitgeleend aan ${currentLoanee}.`, 'bg-yellow-500');
-                    }
-                } else {
-                    // Item is being loaned out
-                    await addDoc(loansCollectionRef, {
-                        student_barcode: studentId,
-                        student_name: studentName,
-                        item_barcode: itemBarcode,
-                        item_name: itemName,
-                        loan_date: new Date().toISOString()
-                    });
-                    showMessage(`Item '${itemName}' is succesvol uitgeleend aan ${studentName}.`, 'bg-green-500');
-                }
-            } catch(error) {
-                 console.error("Transaction error:", error);
-                 showMessage('Er is een onverwachte fout opgetreden. Probeer het opnieuw.', 'bg-red-500');
-            } finally {
-                isProcessing = false;
-                loadingIndicatorStudent.classList.add('hidden');
-                barcodeInput.value = '';
-                barcodeInput.focus();
-            }
-        }
-
-        async function handleAddItem() {
-            const barcode = newItemBarcodeInput.value.trim();
-            const name = newItemNameInput.value.trim();
-
-            if (!barcode || !name) {
-                showMessage('Vul zowel de barcode als de naam in.', 'bg-red-500', addItemStatusMessage);
-                return;
-            }
-
-            const itemDocRef = doc(itemsCollectionRef, barcode);
-            const itemDoc = await getDoc(itemDocRef);
-
-            if (itemDoc.exists()) {
-                showMessage(`Fout: Een item met barcode '${barcode}' bestaat al.`, 'bg-yellow-500', addItemStatusMessage);
-            } else {
-                try {
-                    await setDoc(itemDocRef, { name: name });
-                    showMessage(`Item '${name}' is succesvol toegevoegd.`, 'bg-green-500', addItemStatusMessage);
-                    newItemBarcodeInput.value = '';
-                    newItemNameInput.value = '';
-                } catch (error) {
-                    console.error("Error adding item:", error);
-                    showMessage('Er is een fout opgetreden bij het toevoegen van het item.', 'bg-red-500', addItemStatusMessage);
-                }
-            }
-        }
-
-        async function handleAddStudent() {
-            const barcode = newStudentBarcodeInput.value.trim();
-            const name = newStudentNameInput.value.trim();
-
-            if (!barcode || !name) {
-                showMessage('Vul zowel de barcode als de naam in.', 'bg-red-500', addStudentStatusMessage);
-                return;
-            }
-
-            const studentDocRef = doc(studentsCollectionRef, barcode);
-            const studentDoc = await getDoc(studentDocRef);
-
-            if (studentDoc.exists()) {
-                showMessage(`Fout: Een leerling met barcode '${barcode}' bestaat al.`, 'bg-yellow-500', addStudentStatusMessage);
-            } else {
-                try {
-                    await setDoc(studentDocRef, { name: name });
-                    showMessage(`Leerling '${name}' is succesvol toegevoegd.`, 'bg-green-500', addStudentStatusMessage);
-                    newStudentBarcodeInput.value = '';
-                    newStudentNameInput.value = '';
-                } catch (error) {
-                    console.error("Error adding student:", error);
-                    showMessage('Er is een fout opgetreden bij het toevoegen van de leerling.', 'bg-red-500', addStudentStatusMessage);
-                }
-            }
-        }
-
-        function handleClearStudent() {
-            localStorage.removeItem('loggedInStudent');
-            showMessage('Leerling sessie gewist. Scan de barcode van een leerling om opnieuw te beginnen.', 'bg-blue-500');
-            barcodeInput.value = '';
-            barcodeInput.focus();
-        }
-
-        function handleLogout() {
-            localStorage.removeItem('loggedInStudent');
-            showScreen('landing');
-        }
-
-        // Initialize mock data for students, items, and a teacher for a new user
-        async function initializeData() {
-            // Check if collections are empty before adding mock data
-            const studentCount = (await getDocs(studentsCollectionRef)).size;
-            const itemCount = (await getDocs(itemsCollectionRef)).size;
-            const teacherCount = (await getDocs(teachersCollectionRef)).size;
-
-            if (studentCount === 0) {
-                await setDoc(doc(studentsCollectionRef, "123456789"), { name: "Jan de Vries" });
-                await setDoc(doc(studentsCollectionRef, "987654321"), { name: "Maria Jansen" });
-            }
-            if (itemCount === 0) {
-                await setDoc(doc(itemsCollectionRef, "A001"), { name: "Gereedschapskist 1" });
-                await setDoc(doc(itemsCollectionRef, "A002"), { name: "Projector" });
-                await setDoc(doc(itemsCollectionRef, "A003"), { name: "Lokaal Sleutel 12" });
-            }
-            if (teacherCount === 0) {
-                await setDoc(doc(teachersCollectionRef, "17040677744968147461"), { name: "Mevrouw de Wit" });
-            }
-        }
-        
-        // Event listeners
-        initialBarcodeInput.addEventListener('keydown', async (e) => {
-            console.log("Key pressed: ", e.key);
-            if (e.key === 'Enter') {
-                console.log("Enter key detected!");
-                e.preventDefault();
-                const barcode = initialBarcodeInput.value.trim();
-                if (barcode) {
-                    await handleInitialScan(barcode);
-                }
-            }
+    function renderLoans(loans) {
+      loanTableBody.innerHTML = "";
+      if (loans.length === 0) {
+        noLoansMessage.classList.remove("hidden");
+      } else {
+        noLoansMessage.classList.add("hidden");
+        loans.forEach(l => {
+          const row = document.createElement("tr");
+          row.innerHTML = `
+            <td>${l.item_name}</td>
+            <td>${l.student_name}</td>
+            <td>${new Date(l.loan_date).toLocaleDateString()}</td>
+            <td>${l.item_barcode}</td>
+          `;
+          loanTableBody.appendChild(row);
         });
+      }
+    }
 
-        initialStartButton.addEventListener('click', async () => {
-            console.log("Start button clicked!");
-            const barcode = initialBarcodeInput.value.trim();
-            if (barcode) {
-                await handleInitialScan(barcode);
-            }
+    async function handleInitialScan(barcode) {
+      const teacherDoc = await getDoc(doc(teachersRef, barcode));
+      if (teacherDoc.exists()) {
+        showScreen("teacher");
+        document.getElementById("teacherIdDisplay").textContent = teacherDoc.data().name;
+        return;
+      }
+      const studentDoc = await getDoc(doc(studentsRef, barcode));
+      if (studentDoc.exists()) {
+        localStorage.setItem("loggedInStudent", JSON.stringify({ barcode, name: studentDoc.data().name }));
+        showScreen("student");
+        userIdDisplay.textContent = studentDoc.data().name;
+        return;
+      }
+      showMessage("Barcode niet gevonden", "bg-red-500", initialStatusMessage);
+    }
+
+    async function handleItemTransaction(itemBarcode) {
+      const loggedInStudent = JSON.parse(localStorage.getItem("loggedInStudent"));
+      if (!loggedInStudent) {
+        showMessage("Geen leerling actief", "bg-yellow-500", statusMessage);
+        return;
+      }
+      const itemDoc = await getDoc(doc(itemsRef, itemBarcode));
+      if (!itemDoc.exists()) {
+        showMessage("Item niet gevonden", "bg-red-500", statusMessage);
+        return;
+      }
+      const loansSnap = await getDocs(loansRef);
+      const existing = loansSnap.docs.find(d => d.data().item_barcode === itemBarcode);
+      if (existing) {
+        if (existing.data().student_barcode === loggedInStudent.barcode) {
+          await deleteDoc(doc(loansRef, existing.id));
+          showMessage("Item ingeleverd", "bg-green-500", statusMessage);
+        } else {
+          showMessage("Item al uitgeleend", "bg-yellow-500", statusMessage);
+        }
+      } else {
+        await addDoc(loansRef, {
+          student_barcode: loggedInStudent.barcode,
+          student_name: loggedInStudent.name,
+          item_barcode: itemBarcode,
+          item_name: itemDoc.data().name,
+          loan_date: new Date().toISOString()
         });
+        showMessage("Item uitgeleend", "bg-green-500", statusMessage);
+      }
+    }
 
-        barcodeInput.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter') {
-                e.preventDefault();
-                const barcode = barcodeInput.value.trim();
-                if (barcode) {
-                    handleItemTransaction(barcode);
-                }
-            }
-        });
+    async function initializeMockData() {
+      if (!(await getDoc(doc(studentsRef, "123456"))).exists())
+        await setDoc(doc(studentsRef, "123456"), { name: "Jan de Vries" });
+      if (!(await getDoc(doc(teachersRef, "T001"))).exists())
+        await setDoc(doc(teachersRef, "T001"), { name: "Mevrouw de Wit" });
+      if (!(await getDoc(doc(itemsRef, "A001"))).exists())
+        await setDoc(doc(itemsRef, "A001"), { name: "Projector" });
+    }
 
-        addItemButton.addEventListener('click', handleAddItem);
-        addStudentButton.addEventListener('click', handleAddStudent);
-        clearStudentButton.addEventListener('click', handleClearStudent);
-        printButton.addEventListener('click', () => {
-            window.print();
-        });
-        logoutButtonStudent.addEventListener('click', handleLogout);
-        logoutButtonTeacher.addEventListener('click', handleLogout);
+    // Events
+    initialStartButton.addEventListener("click", () => handleInitialScan(initialBarcodeInput.value.trim()));
+    initialBarcodeInput.addEventListener("keydown", e => { if (e.key === "Enter") handleInitialScan(initialBarcodeInput.value.trim()); });
+    barcodeInput.addEventListener("keydown", e => { if (e.key === "Enter") handleItemTransaction(barcodeInput.value.trim()); });
+    clearStudentButton.addEventListener("click", () => { localStorage.removeItem("loggedInStudent"); showMessage("Leerling gewist", "bg-blue-500", statusMessage); });
+    printButton.addEventListener("click", () => window.print());
+    logoutButton.addEventListener("click", () => { localStorage.removeItem("loggedInStudent"); showScreen("landing"); });
+    logoutButtonTeacher.addEventListener("click", () => { showScreen("landing"); });
 
-        // Start the app
-        window.onload = async () => {
-            // Firebase initialisatie
-            app = initializeApp(firebaseConfig);
-            db = getFirestore(app);
-            auth = getAuth(app);
-            setLogLevel('debug');
-            
-            // Collecties initialiseren
-            studentsCollectionRef = collection(db, `artifacts/${appId}/public/data/students`);
-            itemsCollectionRef = collection(db, `artifacts/${appId}/public/data/items`);
-            loansCollectionRef = collection(db, `artifacts/${appId}/public/data/loans`);
-            teachersCollectionRef = collection(db, `artifacts/${appId}/public/data/teachers`);
-
-            await authenticate();
-            await initializeData();
-            showScreen('landing');
-        };
-
-    </script>
+    // Start app
+    window.onload = async () => {
+      await signInAnonymously(auth);
+      await initializeMockData();
+      onSnapshot(query(loansRef), snap => {
+        const loans = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+        renderLoans(loans);
+      });
+      showScreen("landing");
+    };
+  </script>
 </body>
 </html>
