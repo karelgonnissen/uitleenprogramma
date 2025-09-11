@@ -265,36 +265,43 @@
       }
     }
 
-    async function handleImportStudents() {
-      const file = csvFileInput.files[0];
-      if (!file) {
-        showMessage("Kies eerst een CSV-bestand", "bg-yellow-500", importStatusMessage);
-        return;
-      }
-      Papa.parse(file, {
-        header: true,
-        skipEmptyLines: true,
-        complete: async function(results) {
-          let count = 0;
-          try {
-            for (const row of results.data) {
-              const nummer = row.nummer?.trim();
-              const voornaam = row.voornaam?.trim();
-              const achternaam = row.achternaam?.trim();
-              if (!nummer || !voornaam || !achternaam) continue;
-              const studentId = nummer;
-              const studentName = `${voornaam} ${achternaam}`;
-              await setDoc(doc(studentsRef, studentId), { name: studentName });
-              count++;
-            }
-            showMessage(`${count} leerlingen geïmporteerd ✅`, "bg-green-500", importStatusMessage);
-          } catch (err) {
-            console.error(err);
-            showMessage("Fout bij import", "bg-red-500", importStatusMessage);
-          }
+   async function handleImportStudents() {
+  const file = csvFileInput.files[0];
+  if (!file) {
+    showMessage("Kies eerst een CSV-bestand", "bg-yellow-500", importStatusMessage);
+    return;
+  }
+
+  Papa.parse(file, {
+    header: true,
+    skipEmptyLines: true,
+    delimiter: "", // autodetect → werkt voor komma en puntkomma
+    complete: async function(results) {
+      let count = 0;
+      try {
+        for (const row of results.data) {
+          // Tolerant op kolomnamen
+          const nummer = (row.nummer || row.Nummer)?.trim();
+          const voornaam = (row.voornaam || row.Voornaam)?.trim();
+          const achternaam = (row.achternaam || row.Achternaam || row.naam || row.Naam)?.trim();
+
+          if (!nummer || !voornaam || !achternaam) continue;
+
+          const studentId = nummer;
+          const studentName = `${voornaam} ${achternaam}`;
+
+          await setDoc(doc(studentsRef, studentId), { name: studentName });
+          count++;
         }
-      });
+        showMessage(`${count} leerlingen geïmporteerd ✅`, "bg-green-500", importStatusMessage);
+      } catch (err) {
+        console.error(err);
+        showMessage("Fout bij import", "bg-red-500", importStatusMessage);
+      }
     }
+  });
+}
+
 
     // Events
     initialStartButton.addEventListener("click", () => handleInitialScan(initialBarcodeInput.value.trim()));
@@ -320,3 +327,4 @@
   </script>
 </body>
 </html>
+
