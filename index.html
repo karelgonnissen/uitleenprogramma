@@ -55,6 +55,7 @@
         <h2 class="text-2xl font-bold text-green-600">Docentenpaneel</h2>
         <button id="logoutButtonTeacher" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg">Uitloggen</button>
       </div>
+      <!-- Item toevoegen -->
       <div>
         <h3 class="font-semibold mb-2">Nieuw item</h3>
         <div class="flex gap-2 mb-2">
@@ -64,6 +65,7 @@
         <button id="addItemButton" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg">Toevoegen</button>
         <div id="addItemStatusMessage" class="hidden mt-2 p-3 rounded-lg text-white"></div>
       </div>
+      <!-- Leerling toevoegen -->
       <div class="mt-6">
         <h3 class="font-semibold mb-2">Nieuwe leerling</h3>
         <div class="flex gap-2 mb-2">
@@ -72,6 +74,15 @@
         </div>
         <button id="addStudentButton" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg">Toevoegen</button>
         <div id="addStudentStatusMessage" class="hidden mt-2 p-3 rounded-lg text-white"></div>
+      </div>
+      <!-- Reset leningen -->
+      <div class="mt-8 border-t pt-4">
+        <h3 class="font-semibold mb-2 text-red-600">Beheer</h3>
+        <div class="flex gap-2">
+          <input id="resetInput" type="password" class="flex-1 border border-gray-300 rounded-lg px-4 py-2" placeholder="Bevestiging..." />
+          <button id="resetButton" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg">Reset leningen</button>
+        </div>
+        <div id="resetStatusMessage" class="hidden mt-2 p-3 rounded-lg text-white"></div>
       </div>
     </div>
   </div>
@@ -127,6 +138,9 @@
     const addStudentButton = document.getElementById("addStudentButton");
     const addStudentStatusMessage = document.getElementById("addStudentStatusMessage");
     const clearStudentButton = document.getElementById("clearStudentButton");
+    const resetButton = document.getElementById("resetButton");
+    const resetInput = document.getElementById("resetInput");
+    const resetStatusMessage = document.getElementById("resetStatusMessage");
 
     function showMessage(msg, cls, target) {
       target.textContent = msg;
@@ -218,6 +232,25 @@
         await setDoc(doc(itemsRef, "A001"), { name: "Projector" });
     }
 
+    async function handleResetLoans() {
+      const confirmText = resetInput.value.trim().toLowerCase();
+      if (confirmText !== "reset") {
+        showMessage("Ongeldige bevestiging", "bg-yellow-500", resetStatusMessage);
+        return;
+      }
+      try {
+        const snapshot = await getDocs(loansRef);
+        for (const loan of snapshot.docs) {
+          await deleteDoc(doc(loansRef, loan.id));
+        }
+        showMessage("Alle leningen gewist ✅", "bg-green-500", resetStatusMessage);
+        resetInput.value = "";
+      } catch (err) {
+        console.error(err);
+        showMessage("Fout bij resetten", "bg-red-500", resetStatusMessage);
+      }
+    }
+
     // Events
     initialStartButton.addEventListener("click", () => handleInitialScan(initialBarcodeInput.value.trim()));
     initialBarcodeInput.addEventListener("keydown", e => { if (e.key === "Enter") handleInitialScan(initialBarcodeInput.value.trim()); });
@@ -226,6 +259,7 @@
     printButton.addEventListener("click", () => window.print());
     logoutButton.addEventListener("click", () => { localStorage.removeItem("loggedInStudent"); showScreen("landing"); });
     logoutButtonTeacher.addEventListener("click", () => { showScreen("landing"); });
+    resetButton.addEventListener("click", handleResetLoans);
 
     // Start
     window.onload = async () => {
