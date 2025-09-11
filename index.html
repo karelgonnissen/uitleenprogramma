@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="nl">
 <head>
     <meta charset="UTF-8">
@@ -85,7 +85,6 @@
             100% { transform: rotate(360deg); }
         }
 
-
         /* Print-specifieke stijlen */
         @media print {
             body {
@@ -122,7 +121,6 @@
                 <span class="ml-2 text-gray-600">Laden...</span>
             </div>
         </div>
-
 
         <!-- Student View -->
         <div id="studentView" class="hidden">
@@ -176,13 +174,11 @@
             </div>
         </div>
 
-
         <!-- Teacher View (initially hidden) -->
         <div id="teacherView" class="hidden no-print">
             <button id="logoutButtonTeacher" class="logout-btn no-print">Uitloggen</button>
             <h1 class="text-4xl font-extrabold text-gray-800 mb-6 text-center">Docentenpaneel</h1>
             <p class="text-center text-gray-600 mb-8">Beheer items en leerlingen.</p>
-
 
             <div class="mt-8 p-6 bg-white rounded-2xl shadow-xl border border-gray-200">
                 <h2 class="text-2xl font-bold text-gray-800 mb-4">Nieuw Item Toevoegen</h2>
@@ -200,7 +196,6 @@
                 </button>
                 <div id="addItemStatusMessage" class="hidden user-message mt-4"></div>
             </div>
-
 
             <div class="mt-8 p-6 bg-white rounded-2xl shadow-xl border border-gray-200">
                 <h2 class="text-2xl font-bold text-gray-800 mb-4">Nieuwe Leerling Toevoegen</h2>
@@ -220,29 +215,19 @@
             </div>
         </div>
 
-
     </div>
 
-
     <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInWithCustomToken, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, getDoc, setDoc, collection, query, onSnapshot, runTransaction, getDocs, addDoc, deleteDoc, getDocFromCache } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-        import { setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-
+        import { initializeApp } from "https://cdn.jsdelivr.net/npm/firebase@10.5.2/firebase-app.js";
+        import { getAuth, signInWithCustomToken, signInAnonymously } from "https://cdn.jsdelivr.net/npm/firebase@10.5.2/firebase-auth.js";
+        import { getFirestore, doc, getDoc, setDoc, collection, query, onSnapshot, runTransaction, getDocs, addDoc, deleteDoc, getDocFromCache } from "https://cdn.jsdelivr.net/npm/firebase@10.5.2/firebase-firestore.js";
+        import { setLogLevel } from "https://cdn.jsdelivr.net/npm/firebase@10.5.2/firebase-firestore.js";
 
         // De Firebase-configuratie en app-ID worden automatisch verstrekt door de omgeving.
         const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : null;
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
         const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
         
-        // Initialize Firebase
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
-        const auth = getAuth(app);
-        setLogLevel('debug');
-
-
         // UI Elements
         const landingView = document.getElementById('landingView');
         const studentView = document.getElementById('studentView');
@@ -274,14 +259,12 @@
         let currentUser = null;
         let isProcessing = false;
         let currentView = 'landing';
-
+        
+        // Firebase instances
+        let app, db, auth;
 
         // Collections references
-        const studentsCollectionRef = collection(db, `artifacts/${appId}/public/data/students`);
-        const itemsCollectionRef = collection(db, `artifacts/${appId}/public/data/items`);
-        const loansCollectionRef = collection(db, `artifacts/${appId}/public/data/loans`);
-        const teachersCollectionRef = collection(db, `artifacts/${appId}/public/data/teachers`);
-
+        let studentsCollectionRef, itemsCollectionRef, loansCollectionRef, teachersCollectionRef;
 
         // Authentication and user setup
         async function authenticate() {
@@ -294,14 +277,12 @@
                 currentUser = auth.currentUser;
                 console.log("Authentication successful, user ID:", currentUser.uid);
 
-
                 setupRealtimeListeners();
             } catch (error) {
                 console.error("Authentication failed:", error);
                 showMessage('Fout bij authenticatie. Probeer het opnieuw.', 'bg-red-500');
             }
         }
-
 
         // View management
         function showScreen(screen) {
@@ -325,7 +306,6 @@
             }
         }
 
-
         // Realtime listeners
         function setupRealtimeListeners() {
             // Listen for changes in loans
@@ -338,7 +318,6 @@
             });
         }
 
-
         // Render functions
         function showMessage(message, colorClass, targetElement = statusMessage) {
             targetElement.textContent = message;
@@ -348,7 +327,6 @@
                 targetElement.classList.add('hidden');
             }, 5000);
         }
-
 
         function renderLoans(loans) {
             loanTableBody.innerHTML = '';
@@ -371,7 +349,6 @@
             }
         }
 
-
         // Core logic
         async function handleInitialScan(barcode) {
             console.log("Start scanning barcode...");
@@ -382,7 +359,6 @@
             isProcessing = true;
             loadingIndicatorLanding.classList.remove('hidden');
             showMessage('Laden...', 'bg-gray-500', initialStatusMessage);
-
 
             try {
                 console.log(`Searching for teacher with barcode: ${barcode}`);
@@ -410,10 +386,8 @@
                     return;
                 }
 
-
                 console.log("Barcode not found in teacher or student collections.");
                 showMessage('Barcode niet gevonden. Probeer het opnieuw.', 'bg-red-500', initialStatusMessage);
-
 
             } catch (error) {
                 console.error("Login error during initial scan:", error);
@@ -427,7 +401,6 @@
             }
         }
 
-
         async function handleItemTransaction(itemBarcode) {
             if (isProcessing) {
                 console.log("Processing already in progress, ignoring new input.");
@@ -440,16 +413,13 @@
             try {
                 const loggedInStudent = JSON.parse(localStorage.getItem('loggedInStudent'));
 
-
                 if (!loggedInStudent) {
                     showMessage('Scan eerst de barcode van een leerling om in te loggen.', 'bg-yellow-500');
                     return;
                 }
 
-
                 const studentId = loggedInStudent.barcode;
                 const studentName = loggedInStudent.name;
-
 
                 // Check if the item exists
                 const itemDocRef = doc(itemsCollectionRef, itemBarcode);
@@ -460,13 +430,11 @@
                 }
                 const itemName = itemDoc.data().name;
 
-
                 // Check if the item is already loaned out
                 const loansQuery = query(loansCollectionRef);
                 const loansSnapshot = await getDocs(loansQuery);
                 const existingLoan = loansSnapshot.docs.find(doc => doc.data().item_barcode === itemBarcode);
                 const isLoanedByCurrentUser = existingLoan && existingLoan.data().student_barcode === studentId;
-
 
                 if (existingLoan) {
                     if (isLoanedByCurrentUser) {
@@ -500,21 +468,17 @@
             }
         }
 
-
         async function handleAddItem() {
             const barcode = newItemBarcodeInput.value.trim();
             const name = newItemNameInput.value.trim();
-
 
             if (!barcode || !name) {
                 showMessage('Vul zowel de barcode als de naam in.', 'bg-red-500', addItemStatusMessage);
                 return;
             }
 
-
             const itemDocRef = doc(itemsCollectionRef, barcode);
             const itemDoc = await getDoc(itemDocRef);
-
 
             if (itemDoc.exists()) {
                 showMessage(`Fout: Een item met barcode '${barcode}' bestaat al.`, 'bg-yellow-500', addItemStatusMessage);
@@ -531,21 +495,17 @@
             }
         }
 
-
         async function handleAddStudent() {
             const barcode = newStudentBarcodeInput.value.trim();
             const name = newStudentNameInput.value.trim();
-
 
             if (!barcode || !name) {
                 showMessage('Vul zowel de barcode als de naam in.', 'bg-red-500', addStudentStatusMessage);
                 return;
             }
 
-
             const studentDocRef = doc(studentsCollectionRef, barcode);
             const studentDoc = await getDoc(studentDocRef);
-
 
             if (studentDoc.exists()) {
                 showMessage(`Fout: Een leerling met barcode '${barcode}' bestaat al.`, 'bg-yellow-500', addStudentStatusMessage);
@@ -562,7 +522,6 @@
             }
         }
 
-
         function handleClearStudent() {
             localStorage.removeItem('loggedInStudent');
             showMessage('Leerling sessie gewist. Scan de barcode van een leerling om opnieuw te beginnen.', 'bg-blue-500');
@@ -570,12 +529,10 @@
             barcodeInput.focus();
         }
 
-
         function handleLogout() {
             localStorage.removeItem('loggedInStudent');
             showScreen('landing');
         }
-
 
         // Initialize mock data for students, items, and a teacher for a new user
         async function initializeData() {
@@ -583,7 +540,6 @@
             const studentCount = (await getDocs(studentsCollectionRef)).size;
             const itemCount = (await getDocs(itemsCollectionRef)).size;
             const teacherCount = (await getDocs(teachersCollectionRef)).size;
-
 
             if (studentCount === 0) {
                 await setDoc(doc(studentsCollectionRef, "123456789"), { name: "Jan de Vries" });
@@ -612,7 +568,6 @@
             }
         });
 
-
         initialStartButton.addEventListener('click', async () => {
             console.log("Start button clicked!");
             const barcode = initialBarcodeInput.value.trim();
@@ -620,7 +575,6 @@
                 await handleInitialScan(barcode);
             }
         });
-
 
         barcodeInput.addEventListener('keydown', (e) => {
             if (e.key === 'Enter') {
@@ -632,7 +586,6 @@
             }
         });
 
-
         addItemButton.addEventListener('click', handleAddItem);
         addStudentButton.addEventListener('click', handleAddStudent);
         clearStudentButton.addEventListener('click', handleClearStudent);
@@ -642,14 +595,24 @@
         logoutButtonStudent.addEventListener('click', handleLogout);
         logoutButtonTeacher.addEventListener('click', handleLogout);
 
-
         // Start the app
         window.onload = async () => {
+            // Firebase initialisatie
+            app = initializeApp(firebaseConfig);
+            db = getFirestore(app);
+            auth = getAuth(app);
+            setLogLevel('debug');
+            
+            // Collecties initialiseren
+            studentsCollectionRef = collection(db, `artifacts/${appId}/public/data/students`);
+            itemsCollectionRef = collection(db, `artifacts/${appId}/public/data/items`);
+            loansCollectionRef = collection(db, `artifacts/${appId}/public/data/loans`);
+            teachersCollectionRef = collection(db, `artifacts/${appId}/public/data/teachers`);
+
             await authenticate();
             await initializeData();
             showScreen('landing');
         };
-
 
     </script>
 </body>
