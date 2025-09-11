@@ -4,125 +4,83 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Uitleenprogramma</title>
-  <style>
-    body {
-      font-family: sans-serif;
-      background-color: #f0f4f8;
-      margin: 0;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      min-height: 100vh;
-    }
-    .container {
-      max-width: 1000px;
-      margin: 0 auto;
-      padding: 2rem;
-      background: white;
-      border-radius: 1rem;
-      box-shadow: 0 10px 20px rgba(0,0,0,0.1);
-      width: 100%;
-    }
-    .hidden { display: none; }
-    .user-message {
-      margin-top: 1rem;
-      padding: 0.75rem 1.25rem;
-      border-radius: 0.75rem;
-      color: white;
-    }
-    .bg-red-500 { background-color: #ef4444; }
-    .bg-green-500 { background-color: #16a34a; }
-    .bg-yellow-500 { background-color: #facc15; color: black; }
-    .bg-blue-500 { background-color: #3b82f6; }
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 1rem;
-    }
-    th, td {
-      padding: 0.5rem 0.75rem;
-      border-bottom: 1px solid #ddd;
-      text-align: left;
-    }
-    th { background: #2563eb; color: white; }
-    tr:hover { background: #f3f4f6; }
-    button {
-      padding: 0.5rem 1rem;
-      border: none;
-      border-radius: 0.5rem;
-      cursor: pointer;
-      font-weight: bold;
-      margin-left: 0.25rem;
-    }
-    .btn-blue { background: #2563eb; color: white; }
-    .btn-red { background: #ef4444; color: white; }
-    .btn-gray { background: #6b7280; color: white; }
-  </style>
+  <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body>
-  <div class="container">
+<body class="bg-gray-100 min-h-screen flex items-center justify-center">
+  <div class="bg-white shadow-xl rounded-2xl w-full max-w-4xl p-8">
     <!-- Landing View -->
     <div id="landingView">
-      <h1>Uitleenprogramma</h1>
-      <p>Scan je barcode om te beginnen.</p>
-      <input type="text" id="initialBarcodeInput" placeholder="Scan leerling- of docentbarcode..." />
-      <button id="initialStartButton" class="btn-blue">Start</button>
-      <div id="initialStatusMessage" class="hidden user-message"></div>
+      <h1 class="text-4xl font-extrabold text-blue-600 text-center mb-4">📚 Uitleenprogramma</h1>
+      <p class="text-center text-gray-600 mb-6">Scan je barcode om te beginnen.</p>
+      <div class="flex gap-2">
+        <input id="initialBarcodeInput" class="flex-1 border border-gray-300 rounded-lg px-4 py-2 focus:ring focus:ring-blue-300" placeholder="Scan leerling- of docentbarcode..." />
+        <button id="initialStartButton" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg shadow">Start</button>
+      </div>
+      <div id="initialStatusMessage" class="hidden mt-4 p-3 rounded-lg text-white text-center"></div>
     </div>
 
     <!-- Student View -->
     <div id="studentView" class="hidden">
-      <button id="logoutButton" class="btn-red">Uitloggen</button>
-      <h2>Studentenpaneel</h2>
-      <p id="userIdDisplay"></p>
-      <input type="text" id="barcodeInput" placeholder="Scan itembarcode..." />
-      <button id="clearStudentButton" class="btn-gray">Wis leerling</button>
-      <div id="statusMessage" class="hidden user-message"></div>
-      <h3>Uitgeleende items</h3>
-      <table>
-        <thead>
-          <tr>
-            <th>Artikel</th>
-            <th>Leerling</th>
-            <th>Datum</th>
-            <th>Barcode</th>
-          </tr>
-        </thead>
-        <tbody id="loanTableBody"></tbody>
-      </table>
-      <div id="noLoansMessage" class="hidden">Er zijn momenteel geen items uitgeleend.</div>
-      <button id="printButton" class="btn-gray">Afdrukken</button>
+      <div class="flex justify-between items-center mb-6">
+        <h2 class="text-2xl font-bold text-blue-600">Studentenpaneel</h2>
+        <button id="logoutButton" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg">Uitloggen</button>
+      </div>
+      <p id="userIdDisplay" class="font-medium text-gray-700 mb-4"></p>
+      <div class="flex gap-2 mb-4">
+        <input id="barcodeInput" class="flex-1 border border-gray-300 rounded-lg px-4 py-2 focus:ring focus:ring-blue-300" placeholder="Scan itembarcode..." />
+        <button id="clearStudentButton" class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg">Wis leerling</button>
+      </div>
+      <div id="statusMessage" class="hidden mb-4 p-3 rounded-lg text-white"></div>
+      <h3 class="text-xl font-semibold mb-2">Uitgeleende items</h3>
+      <div class="overflow-x-auto rounded-lg shadow">
+        <table class="w-full text-left border-collapse">
+          <thead class="bg-blue-600 text-white">
+            <tr>
+              <th class="px-4 py-2">Artikel</th>
+              <th class="px-4 py-2">Leerling</th>
+              <th class="px-4 py-2">Datum</th>
+              <th class="px-4 py-2">Barcode</th>
+            </tr>
+          </thead>
+          <tbody id="loanTableBody" class="divide-y divide-gray-200"></tbody>
+        </table>
+      </div>
+      <div id="noLoansMessage" class="hidden text-gray-500 mt-2 text-center">Geen items uitgeleend.</div>
+      <button id="printButton" class="mt-4 bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg">Afdrukken</button>
     </div>
 
     <!-- Teacher View -->
     <div id="teacherView" class="hidden">
-      <button id="logoutButtonTeacher" class="btn-red">Uitloggen</button>
-      <h2>Docentenpaneel</h2>
-      <p id="teacherIdDisplay"></p>
-      <div>
-        <h3>Nieuw item toevoegen</h3>
-        <input type="text" id="newItemBarcodeInput" placeholder="Barcode..." />
-        <input type="text" id="newItemNameInput" placeholder="Naam..." />
-        <button id="addItemButton" class="btn-blue">Toevoegen</button>
-        <div id="addItemStatusMessage" class="hidden user-message"></div>
+      <div class="flex justify-between items-center mb-6">
+        <h2 class="text-2xl font-bold text-green-600">Docentenpaneel</h2>
+        <button id="logoutButtonTeacher" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg">Uitloggen</button>
       </div>
       <div>
-        <h3>Nieuwe leerling toevoegen</h3>
-        <input type="text" id="newStudentBarcodeInput" placeholder="Barcode..." />
-        <input type="text" id="newStudentNameInput" placeholder="Naam..." />
-        <button id="addStudentButton" class="btn-blue">Toevoegen</button>
-        <div id="addStudentStatusMessage" class="hidden user-message"></div>
+        <h3 class="font-semibold mb-2">Nieuw item</h3>
+        <div class="flex gap-2 mb-2">
+          <input id="newItemBarcodeInput" class="flex-1 border border-gray-300 rounded-lg px-4 py-2" placeholder="Barcode..." />
+          <input id="newItemNameInput" class="flex-1 border border-gray-300 rounded-lg px-4 py-2" placeholder="Naam..." />
+        </div>
+        <button id="addItemButton" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg">Toevoegen</button>
+        <div id="addItemStatusMessage" class="hidden mt-2 p-3 rounded-lg text-white"></div>
+      </div>
+      <div class="mt-6">
+        <h3 class="font-semibold mb-2">Nieuwe leerling</h3>
+        <div class="flex gap-2 mb-2">
+          <input id="newStudentBarcodeInput" class="flex-1 border border-gray-300 rounded-lg px-4 py-2" placeholder="Barcode..." />
+          <input id="newStudentNameInput" class="flex-1 border border-gray-300 rounded-lg px-4 py-2" placeholder="Naam..." />
+        </div>
+        <button id="addStudentButton" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg">Toevoegen</button>
+        <div id="addStudentStatusMessage" class="hidden mt-2 p-3 rounded-lg text-white"></div>
       </div>
     </div>
   </div>
 
+  <!-- Firebase script -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
     import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-    import { 
-      getFirestore, doc, getDoc, setDoc, collection, query, onSnapshot,
-      getDocs, addDoc, deleteDoc 
-    } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+    import { getFirestore, doc, getDoc, setDoc, collection, query, onSnapshot, getDocs, addDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
     // 🔑 Firebase config
     const firebaseConfig = {
@@ -170,10 +128,9 @@
     const addStudentStatusMessage = document.getElementById("addStudentStatusMessage");
     const clearStudentButton = document.getElementById("clearStudentButton");
 
-    // State
     function showMessage(msg, cls, target) {
       target.textContent = msg;
-      target.className = "user-message " + cls;
+      target.className = "mt-2 p-3 rounded-lg text-white text-center " + cls;
       target.classList.remove("hidden");
       setTimeout(() => target.classList.add("hidden"), 3000);
     }
@@ -185,7 +142,6 @@
       if (screen === "student") studentView.classList.remove("hidden");
       if (screen === "teacher") teacherView.classList.remove("hidden");
     }
-
     function renderLoans(loans) {
       loanTableBody.innerHTML = "";
       if (loans.length === 0) {
@@ -195,10 +151,10 @@
         loans.forEach(l => {
           const row = document.createElement("tr");
           row.innerHTML = `
-            <td>${l.item_name}</td>
-            <td>${l.student_name}</td>
-            <td>${new Date(l.loan_date).toLocaleDateString()}</td>
-            <td>${l.item_barcode}</td>
+            <td class="px-4 py-2">${l.item_name}</td>
+            <td class="px-4 py-2">${l.student_name}</td>
+            <td class="px-4 py-2">${new Date(l.loan_date).toLocaleDateString()}</td>
+            <td class="px-4 py-2">${l.item_barcode}</td>
           `;
           loanTableBody.appendChild(row);
         });
@@ -209,7 +165,6 @@
       const teacherDoc = await getDoc(doc(teachersRef, barcode));
       if (teacherDoc.exists()) {
         showScreen("teacher");
-        document.getElementById("teacherIdDisplay").textContent = teacherDoc.data().name;
         return;
       }
       const studentDoc = await getDoc(doc(studentsRef, barcode));
@@ -272,7 +227,7 @@
     logoutButton.addEventListener("click", () => { localStorage.removeItem("loggedInStudent"); showScreen("landing"); });
     logoutButtonTeacher.addEventListener("click", () => { showScreen("landing"); });
 
-    // Start app
+    // Start
     window.onload = async () => {
       await signInAnonymously(auth);
       await initializeMockData();
