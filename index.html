@@ -30,7 +30,6 @@
       <p id="userIdDisplay" class="font-medium text-gray-700 mb-4"></p>
       <div class="flex gap-2 mb-4">
         <input id="barcodeInput" class="flex-1 border border-gray-300 rounded-lg px-4 py-2 focus:ring focus:ring-blue-300" placeholder="Scan itembarcode..." />
-        <button id="clearStudentButton" class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg">Wis leerling</button>
       </div>
       <div id="statusMessage" class="hidden mb-4 p-3 rounded-lg text-white"></div>
       <h3 class="text-xl font-semibold mb-2">Uitgeleende items</h3>
@@ -148,7 +147,6 @@
     const newStudentNameInput = document.getElementById("newStudentNameInput");
     const addStudentButton = document.getElementById("addStudentButton");
     const addStudentStatusMessage = document.getElementById("addStudentStatusMessage");
-    const clearStudentButton = document.getElementById("clearStudentButton");
     const resetButton = document.getElementById("resetButton");
     const resetInput = document.getElementById("resetInput");
     const resetStatusMessage = document.getElementById("resetStatusMessage");
@@ -265,49 +263,42 @@
       }
     }
 
-   async function handleImportStudents() {
-  const file = csvFileInput.files[0];
-  if (!file) {
-    showMessage("Kies eerst een CSV-bestand", "bg-yellow-500", importStatusMessage);
-    return;
-  }
-
-  Papa.parse(file, {
-    header: true,
-    skipEmptyLines: true,
-    delimiter: "", // autodetect → werkt voor komma en puntkomma
-    complete: async function(results) {
-      let count = 0;
-      try {
-        for (const row of results.data) {
-          // Tolerant op kolomnamen
-          const nummer = (row.nummer || row.Nummer)?.trim();
-          const voornaam = (row.voornaam || row.Voornaam)?.trim();
-          const achternaam = (row.achternaam || row.Achternaam || row.naam || row.Naam)?.trim();
-
-          if (!nummer || !voornaam || !achternaam) continue;
-
-          const studentId = nummer;
-          const studentName = `${voornaam} ${achternaam}`;
-
-          await setDoc(doc(studentsRef, studentId), { name: studentName });
-          count++;
-        }
-        showMessage(`${count} leerlingen geïmporteerd ✅`, "bg-green-500", importStatusMessage);
-      } catch (err) {
-        console.error(err);
-        showMessage("Fout bij import", "bg-red-500", importStatusMessage);
+    async function handleImportStudents() {
+      const file = csvFileInput.files[0];
+      if (!file) {
+        showMessage("Kies eerst een CSV-bestand", "bg-yellow-500", importStatusMessage);
+        return;
       }
+      Papa.parse(file, {
+        header: true,
+        skipEmptyLines: true,
+        delimiter: "",
+        complete: async function(results) {
+          let count = 0;
+          try {
+            for (const row of results.data) {
+              const nummer = (row.nummer || row.Nummer)?.trim();
+              const voornaam = (row.voornaam || row.Voornaam)?.trim();
+              const achternaam = (row.achternaam || row.Achternaam || row.naam || row.Naam)?.trim();
+              if (!nummer || !voornaam || !achternaam) continue;
+              const studentId = nummer;
+              const studentName = `${voornaam} ${achternaam}`;
+              await setDoc(doc(studentsRef, studentId), { name: studentName });
+              count++;
+            }
+            showMessage(`${count} leerlingen geïmporteerd ✅`, "bg-green-500", importStatusMessage);
+          } catch (err) {
+            console.error(err);
+            showMessage("Fout bij import", "bg-red-500", importStatusMessage);
+          }
+        }
+      });
     }
-  });
-}
-
 
     // Events
     initialStartButton.addEventListener("click", () => handleInitialScan(initialBarcodeInput.value.trim()));
     initialBarcodeInput.addEventListener("keydown", e => { if (e.key === "Enter") handleInitialScan(initialBarcodeInput.value.trim()); });
     barcodeInput.addEventListener("keydown", e => { if (e.key === "Enter") handleItemTransaction(barcodeInput.value.trim()); });
-    clearStudentButton.addEventListener("click", () => { localStorage.removeItem("loggedInStudent"); showMessage("Leerling gewist", "bg-blue-500", statusMessage); });
     printButton.addEventListener("click", () => window.print());
     logoutButton.addEventListener("click", () => { localStorage.removeItem("loggedInStudent"); showScreen("landing"); });
     logoutButtonTeacher.addEventListener("click", () => { showScreen("landing"); });
@@ -327,4 +318,3 @@
   </script>
 </body>
 </html>
-
