@@ -5,6 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Uitleenprogramma</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <!-- PapaParse voor CSV -->
+  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
 </head>
 <body class="bg-gray-100 min-h-screen flex items-center justify-center">
   <div class="bg-white shadow-xl rounded-2xl w-full max-w-4xl p-8">
@@ -75,8 +77,17 @@
         <button id="addStudentButton" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg">Toevoegen</button>
         <div id="addStudentStatusMessage" class="hidden mt-2 p-3 rounded-lg text-white"></div>
       </div>
+      <!-- Bulk import -->
+      <div class="mt-6 border-t pt-4">
+        <h3 class="font-semibold mb-2">Leerlingen importeren</h3>
+        <input type="file" id="csvFileInput" accept=".csv" class="mb-2" />
+        <button id="importStudentsButton" class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg">
+          Importeren uit CSV
+        </button>
+        <div id="importStatusMessage" class="hidden mt-2 p-3 rounded-lg text-white"></div>
+      </div>
       <!-- Reset leningen -->
-      <div class="mt-8 border-t pt-4">
+      <div class="mt-6 border-t pt-4">
         <h3 class="font-semibold mb-2 text-red-600">Beheer</h3>
         <div class="flex gap-2">
           <input id="resetInput" type="password" class="flex-1 border border-gray-300 rounded-lg px-4 py-2" placeholder="Bevestiging..." />
@@ -141,12 +152,15 @@
     const resetButton = document.getElementById("resetButton");
     const resetInput = document.getElementById("resetInput");
     const resetStatusMessage = document.getElementById("resetStatusMessage");
+    const csvFileInput = document.getElementById("csvFileInput");
+    const importStudentsButton = document.getElementById("importStudentsButton");
+    const importStatusMessage = document.getElementById("importStatusMessage");
 
     function showMessage(msg, cls, target) {
       target.textContent = msg;
       target.className = "mt-2 p-3 rounded-lg text-white text-center " + cls;
       target.classList.remove("hidden");
-      setTimeout(() => target.classList.add("hidden"), 3000);
+      setTimeout(() => target.classList.add("hidden"), 4000);
     }
     function showScreen(screen) {
       landingView.classList.add("hidden");
@@ -251,6 +265,37 @@
       }
     }
 
+    async function handleImportStudents() {
+      const file = csvFileInput.files[0];
+      if (!file) {
+        showMessage("Kies eerst een CSV-bestand", "bg-yellow-500", importStatusMessage);
+        return;
+      }
+      Papa.parse(file, {
+        header: true,
+        skipEmptyLines: true,
+        complete: async function(results) {
+          let count = 0;
+          try {
+            for (const row of results.data) {
+              const nummer = row.nummer?.trim();
+              const voornaam = row.voornaam?.trim();
+              const achternaam = row.achternaam?.trim();
+              if (!nummer || !voornaam || !achternaam) continue;
+              const studentId = nummer;
+              const studentName = `${voornaam} ${achternaam}`;
+              await setDoc(doc(studentsRef, studentId), { name: studentName });
+              count++;
+            }
+            showMessage(`${count} leerlingen geïmporteerd ✅`, "bg-green-500", importStatusMessage);
+          } catch (err) {
+            console.error(err);
+            showMessage("Fout bij import", "bg-red-500", importStatusMessage);
+          }
+        }
+      });
+    }
+
     // Events
     initialStartButton.addEventListener("click", () => handleInitialScan(initialBarcodeInput.value.trim()));
     initialBarcodeInput.addEventListener("keydown", e => { if (e.key === "Enter") handleInitialScan(initialBarcodeInput.value.trim()); });
@@ -260,6 +305,7 @@
     logoutButton.addEventListener("click", () => { localStorage.removeItem("loggedInStudent"); showScreen("landing"); });
     logoutButtonTeacher.addEventListener("click", () => { showScreen("landing"); });
     resetButton.addEventListener("click", handleResetLoans);
+    importStudentsButton.addEventListener("click", handleImportStudents);
 
     // Start
     window.onload = async () => {
