@@ -295,6 +295,60 @@
       });
     }
 
+    // Item toevoegen
+async function handleAddItem() {
+  const barcode = newItemBarcodeInput.value.trim();
+  const name = newItemNameInput.value.trim();
+
+  if (!barcode || !name) {
+    showMessage("Vul barcode én naam in.", "bg-yellow-500", addItemStatusMessage);
+    return;
+  }
+
+  try {
+    const ref = doc(itemsRef, barcode);
+    const snap = await getDoc(ref);
+    if (snap.exists()) {
+      showMessage(`Item met barcode '${barcode}' bestaat al.`, "bg-yellow-500", addItemStatusMessage);
+    } else {
+      await setDoc(ref, { name });
+      showMessage(`Item '${name}' toegevoegd.`, "bg-green-500", addItemStatusMessage);
+      newItemBarcodeInput.value = "";
+      newItemNameInput.value = "";
+    }
+  } catch (err) {
+    console.error(err);
+    showMessage("Fout bij toevoegen van item.", "bg-red-500", addItemStatusMessage);
+  }
+}
+
+// Leerling toevoegen (handmatig)
+async function handleAddStudent() {
+  const barcode = newStudentBarcodeInput.value.trim();
+  const name = newStudentNameInput.value.trim();
+
+  if (!barcode || !name) {
+    showMessage("Vul barcode én naam in.", "bg-yellow-500", addStudentStatusMessage);
+    return;
+  }
+
+  try {
+    const ref = doc(studentsRef, barcode);
+    const snap = await getDoc(ref);
+    if (snap.exists()) {
+      showMessage(`Leerling met barcode '${barcode}' bestaat al.`, "bg-yellow-500", addStudentStatusMessage);
+    } else {
+      await setDoc(ref, { name });
+      showMessage(`Leerling '${name}' toegevoegd.`, "bg-green-500", addStudentStatusMessage);
+      newStudentBarcodeInput.value = "";
+      newStudentNameInput.value = "";
+    }
+  } catch (err) {
+    console.error(err);
+    showMessage("Fout bij toevoegen van leerling.", "bg-red-500", addStudentStatusMessage);
+  }
+}
+
     // Events
     initialStartButton.addEventListener("click", () => handleInitialScan(initialBarcodeInput.value.trim()));
     initialBarcodeInput.addEventListener("keydown", e => { if (e.key === "Enter") handleInitialScan(initialBarcodeInput.value.trim()); });
@@ -304,6 +358,13 @@
     logoutButtonTeacher.addEventListener("click", () => { showScreen("landing"); });
     resetButton.addEventListener("click", handleResetLoans);
     importStudentsButton.addEventListener("click", handleImportStudents);
+    addItemButton.addEventListener("click", handleAddItem);
+    addStudentButton.addEventListener("click", handleAddStudent);
+
+// Optional: Enter-toets support in de inputvelden
+    newItemNameInput.addEventListener("keydown", e => { if (e.key === "Enter") handleAddItem(); });
+    newStudentNameInput.addEventListener("keydown", e => { if (e.key === "Enter") handleAddStudent(); });
+
 
     // Start
     window.onload = async () => {
@@ -318,3 +379,4 @@
   </script>
 </body>
 </html>
+
