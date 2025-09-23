@@ -5,17 +5,17 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Uitleenprogramma</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <!-- PapaParse voor CSV -->
   <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
 </head>
 <body class="bg-gray-100 min-h-screen flex items-center justify-center">
-  <div class="bg-white shadow-xl rounded-2xl w-full max-w-4xl p-8">
+  <div class="bg-white shadow-xl rounded-2xl w-full max-w-5xl p-8">
+
     <!-- Landing View -->
     <div id="landingView">
       <h1 class="text-4xl font-extrabold text-blue-600 text-center mb-4">📚 Uitleenprogramma</h1>
       <p class="text-center text-gray-600 mb-6">Scan je barcode om te beginnen.</p>
       <div class="flex gap-2">
-        <input id="initialBarcodeInput" class="flex-1 border border-gray-300 rounded-lg px-4 py-2 focus:ring focus:ring-blue-300" placeholder="Scan leerling- of docentbarcode..." />
+        <input id="initialBarcodeInput" class="flex-1 border border-gray-300 rounded-lg px-4 py-2" placeholder="Scan leerling- of docentbarcode..." />
         <button id="initialStartButton" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg shadow">Start</button>
       </div>
       <div id="initialStatusMessage" class="hidden mt-4 p-3 rounded-lg text-white text-center"></div>
@@ -29,7 +29,7 @@
       </div>
       <p id="userIdDisplay" class="font-medium text-gray-700 mb-4"></p>
       <div class="flex gap-2 mb-4">
-        <input id="barcodeInput" class="flex-1 border border-gray-300 rounded-lg px-4 py-2 focus:ring focus:ring-blue-300" placeholder="Scan itembarcode..." />
+        <input id="barcodeInput" class="flex-1 border border-gray-300 rounded-lg px-4 py-2" placeholder="Scan itembarcode..." />
       </div>
       <div id="statusMessage" class="hidden mb-4 p-3 rounded-lg text-white"></div>
       <h3 class="text-xl font-semibold mb-2">Uitgeleende items</h3>
@@ -41,6 +41,7 @@
               <th class="px-4 py-2">Leerling</th>
               <th class="px-4 py-2">Datum</th>
               <th class="px-4 py-2">Barcode</th>
+              <th class="px-4 py-2">Status</th>
             </tr>
           </thead>
           <tbody id="loanTableBody" class="divide-y divide-gray-200"></tbody>
@@ -56,6 +57,7 @@
         <h2 class="text-2xl font-bold text-green-600">Docentenpaneel</h2>
         <button id="logoutButtonTeacher" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg">Uitloggen</button>
       </div>
+
       <!-- Item toevoegen -->
       <div>
         <h3 class="font-semibold mb-2">Nieuw item</h3>
@@ -66,6 +68,17 @@
         <button id="addItemButton" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg">Toevoegen</button>
         <div id="addItemStatusMessage" class="hidden mt-2 p-3 rounded-lg text-white"></div>
       </div>
+
+      <!-- Item bewerken -->
+      <div class="mt-6">
+        <h3 class="font-semibold mb-2">Item aanpassen</h3>
+        <div class="flex gap-2 mb-2">
+          <input id="editItemBarcode" class="flex-1 border border-gray-300 rounded-lg px-4 py-2" placeholder="Barcode bestaand item..." />
+          <input id="editItemName" class="flex-1 border border-gray-300 rounded-lg px-4 py-2" placeholder="Nieuwe naam..." />
+        </div>
+        <button id="updateItemButton" class="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-lg">Aanpassen</button>
+      </div>
+
       <!-- Leerling toevoegen -->
       <div class="mt-6">
         <h3 class="font-semibold mb-2">Nieuwe leerling</h3>
@@ -76,6 +89,7 @@
         <button id="addStudentButton" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg">Toevoegen</button>
         <div id="addStudentStatusMessage" class="hidden mt-2 p-3 rounded-lg text-white"></div>
       </div>
+
       <!-- Bulk import -->
       <div class="mt-6 border-t pt-4">
         <h3 class="font-semibold mb-2">Leerlingen importeren</h3>
@@ -85,6 +99,15 @@
         </button>
         <div id="importStatusMessage" class="hidden mt-2 p-3 rounded-lg text-white"></div>
       </div>
+
+      <!-- Overzichten -->
+      <div class="mt-6 border-t pt-4">
+        <h3 class="font-semibold mb-2">Overzichten</h3>
+        <button id="listStudentsButton" class="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg mr-2">Toon leerlingenlijst</button>
+        <button id="listItemsButton" class="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg">Toon itemslijst</button>
+        <div id="listOutput" class="mt-4"></div>
+      </div>
+
       <!-- Reset leningen -->
       <div class="mt-6 border-t pt-4">
         <h3 class="font-semibold mb-2 text-red-600">Beheer</h3>
@@ -97,13 +120,11 @@
     </div>
   </div>
 
-  <!-- Firebase script -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
     import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
     import { getFirestore, doc, getDoc, setDoc, collection, query, onSnapshot, getDocs, addDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
-    // 🔑 Firebase config
     const firebaseConfig = {
       apiKey: "AIzaSyBPJmJ736FjH8Uu0YmzyjiB5QVEsmjIftw",
       authDomain: "uitleenprogramma.firebaseapp.com",
@@ -118,7 +139,6 @@
     const db = getFirestore(app);
     const auth = getAuth(app);
 
-    // Collection refs
     const studentsRef = collection(db, "students");
     const itemsRef = collection(db, "items");
     const loansRef = collection(db, "loans");
@@ -143,6 +163,9 @@
     const newItemNameInput = document.getElementById("newItemNameInput");
     const addItemButton = document.getElementById("addItemButton");
     const addItemStatusMessage = document.getElementById("addItemStatusMessage");
+    const editItemBarcode = document.getElementById("editItemBarcode");
+    const editItemName = document.getElementById("editItemName");
+    const updateItemButton = document.getElementById("updateItemButton");
     const newStudentBarcodeInput = document.getElementById("newStudentBarcodeInput");
     const newStudentNameInput = document.getElementById("newStudentNameInput");
     const addStudentButton = document.getElementById("addStudentButton");
@@ -153,6 +176,9 @@
     const csvFileInput = document.getElementById("csvFileInput");
     const importStudentsButton = document.getElementById("importStudentsButton");
     const importStatusMessage = document.getElementById("importStatusMessage");
+    const listStudentsButton = document.getElementById("listStudentsButton");
+    const listItemsButton = document.getElementById("listItemsButton");
+    const listOutput = document.getElementById("listOutput");
 
     function showMessage(msg, cls, target) {
       target.textContent = msg;
@@ -181,6 +207,9 @@
             <td class="px-4 py-2">${l.student_name}</td>
             <td class="px-4 py-2">${new Date(l.loan_date).toLocaleDateString()}</td>
             <td class="px-4 py-2">${l.item_barcode}</td>
+            <td class="px-4 py-2 ${l.status === 'in behandeling' ? 'bg-orange-500 text-white rounded' : ''}">
+              ${l.status || ''}
+            </td>
           `;
           loanTableBody.appendChild(row);
         });
@@ -229,147 +258,152 @@
           student_name: loggedInStudent.name,
           item_barcode: itemBarcode,
           item_name: itemDoc.data().name,
-          loan_date: new Date().toISOString()
+          loan_date: new Date().toISOString(),
+          status: "in behandeling"
         });
         showMessage("Item uitgeleend", "bg-green-500", statusMessage);
       }
+      barcodeInput.value = ""; // veld leegmaken
     }
 
-    async function initializeMockData() {
-      if (!(await getDoc(doc(studentsRef, "123456"))).exists())
-        await setDoc(doc(studentsRef, "123456"), { name: "Jan de Vries" });
-      if (!(await getDoc(doc(teachersRef, "T001"))).exists())
-        await setDoc(doc(teachersRef, "T001"), { name: "Mevrouw de Wit" });
-      if (!(await getDoc(doc(itemsRef, "A001"))).exists())
-        await setDoc(doc(itemsRef, "A001"), { name: "Projector" });
-    }
-
-    async function handleResetLoans() {
-      const confirmText = resetInput.value.trim().toLowerCase();
-      if (confirmText !== "reset") {
-        showMessage("Ongeldige bevestiging", "bg-yellow-500", resetStatusMessage);
+    async function handleAddItem() {
+      const barcode = newItemBarcodeInput.value.trim();
+      const name = newItemNameInput.value.trim();
+      if (!barcode || !name) {
+        showMessage("Vul barcode én naam in.", "bg-yellow-500", addItemStatusMessage);
         return;
       }
       try {
-        const snapshot = await getDocs(loansRef);
-        for (const loan of snapshot.docs) {
-          await deleteDoc(doc(loansRef, loan.id));
+        const ref = doc(itemsRef, barcode);
+        const snap = await getDoc(ref);
+        if (snap.exists()) {
+          showMessage(`Item met barcode '${barcode}' bestaat al.`, "bg-yellow-500", addItemStatusMessage);
+        } else {
+          await setDoc(ref, { name });
+          showMessage(`Item '${name}' toegevoegd.`, "bg-green-500", addItemStatusMessage);
         }
-        showMessage("Alle leningen gewist ✅", "bg-green-500", resetStatusMessage);
-        resetInput.value = "";
       } catch (err) {
         console.error(err);
-        showMessage("Fout bij resetten", "bg-red-500", resetStatusMessage);
+        showMessage("Fout bij toevoegen van item.", "bg-red-500", addItemStatusMessage);
       }
-    }
-
-    async function handleImportStudents() {
-      const file = csvFileInput.files[0];
-      if (!file) {
-        showMessage("Kies eerst een CSV-bestand", "bg-yellow-500", importStatusMessage);
-        return;
-      }
-      Papa.parse(file, {
-        header: true,
-        skipEmptyLines: true,
-        delimiter: "",
-        complete: async function(results) {
-          let count = 0;
-          try {
-            for (const row of results.data) {
-              const nummer = (row.nummer || row.Nummer)?.trim();
-              const voornaam = (row.voornaam || row.Voornaam)?.trim();
-              const achternaam = (row.achternaam || row.Achternaam || row.naam || row.Naam)?.trim();
-              if (!nummer || !voornaam || !achternaam) continue;
-              const studentId = nummer;
-              const studentName = `${voornaam} ${achternaam}`;
-              await setDoc(doc(studentsRef, studentId), { name: studentName });
-              count++;
-            }
-            showMessage(`${count} leerlingen geïmporteerd ✅`, "bg-green-500", importStatusMessage);
-          } catch (err) {
-            console.error(err);
-            showMessage("Fout bij import", "bg-red-500", importStatusMessage);
-          }
-        }
-      });
-    }
-
-    // Item toevoegen
-async function handleAddItem() {
-  const barcode = newItemBarcodeInput.value.trim();
-  const name = newItemNameInput.value.trim();
-
-  if (!barcode || !name) {
-    showMessage("Vul barcode én naam in.", "bg-yellow-500", addItemStatusMessage);
-    return;
-  }
-
-  try {
-    const ref = doc(itemsRef, barcode);
-    const snap = await getDoc(ref);
-    if (snap.exists()) {
-      showMessage(`Item met barcode '${barcode}' bestaat al.`, "bg-yellow-500", addItemStatusMessage);
-    } else {
-      await setDoc(ref, { name });
-      showMessage(`Item '${name}' toegevoegd.`, "bg-green-500", addItemStatusMessage);
       newItemBarcodeInput.value = "";
       newItemNameInput.value = "";
     }
-  } catch (err) {
-    console.error(err);
-    showMessage("Fout bij toevoegen van item.", "bg-red-500", addItemStatusMessage);
-  }
-}
 
-// Leerling toevoegen (handmatig)
-async function handleAddStudent() {
-  const barcode = newStudentBarcodeInput.value.trim();
-  const name = newStudentNameInput.value.trim();
+    async function handleUpdateItem() {
+      const barcode = editItemBarcode.value.trim();
+      const newName = editItemName.value.trim();
+      if (!barcode || !newName) return;
+      const ref = doc(itemsRef, barcode);
+      const snap = await getDoc(ref);
+      if (!snap.exists()) {
+        showMessage("Item niet gevonden", "bg-red-500", addItemStatusMessage);
+        return;
+      }
+      await setDoc(ref, { name: newName }, { merge: true });
+      showMessage(`Item '${barcode}' aangepast.`, "bg-green-500", addItemStatusMessage);
+      editItemBarcode.value = "";
+      editItemName.value = "";
+    }
 
-  if (!barcode || !name) {
-    showMessage("Vul barcode én naam in.", "bg-yellow-500", addStudentStatusMessage);
-    return;
-  }
-
-  try {
-    const ref = doc(studentsRef, barcode);
-    const snap = await getDoc(ref);
-    if (snap.exists()) {
-      showMessage(`Leerling met barcode '${barcode}' bestaat al.`, "bg-yellow-500", addStudentStatusMessage);
-    } else {
-      await setDoc(ref, { name });
-      showMessage(`Leerling '${name}' toegevoegd.`, "bg-green-500", addStudentStatusMessage);
+    async function handleAddStudent() {
+      const barcode = newStudentBarcodeInput.value.trim();
+      const name = newStudentNameInput.value.trim();
+      if (!barcode || !name) {
+        showMessage("Vul barcode én naam in.", "bg-yellow-500", addStudentStatusMessage);
+        return;
+      }
+      try {
+        const ref = doc(studentsRef, barcode);
+        const snap = await getDoc(ref);
+        if (snap.exists()) {
+          showMessage(`Leerling met barcode '${barcode}' bestaat al.`, "bg-yellow-500", addStudentStatusMessage);
+        } else {
+          await setDoc(ref, { name });
+          showMessage(`Leerling '${name}' toegevoegd.`, "bg-green-500", addStudentStatusMessage);
+        }
+      } catch (err) {
+        console.error(err);
+        showMessage("Fout bij toevoegen van leerling.", "bg-red-500", addStudentStatusMessage);
+      }
       newStudentBarcodeInput.value = "";
       newStudentNameInput.value = "";
     }
-  } catch (err) {
-    console.error(err);
-    showMessage("Fout bij toevoegen van leerling.", "bg-red-500", addStudentStatusMessage);
-  }
-}
+
+    async function handleResetLoans() {
+      if (resetInput.value !== "reset") {
+        showMessage("Onjuiste bevestiging", "bg-red-500", resetStatusMessage);
+        return;
+      }
+      const snap = await getDocs(loansRef);
+      for (const d of snap.docs) {
+        await deleteDoc(d.ref);
+      }
+      showMessage("Alle leningen gewist.", "bg-green-500", resetStatusMessage);
+      resetInput.value = "";
+    }
+
+    async function listStudents() {
+      const snap = await getDocs(studentsRef);
+      let html = "<table class='w-full'><tr><th>Barcode</th><th>Naam</th></tr>";
+      snap.forEach(d => html += `<tr><td>${d.id}</td><td>${d.data().name}</td></tr>`);
+      html += "</table>";
+      listOutput.innerHTML = html;
+    }
+    async function listItems() {
+      const snap = await getDocs(itemsRef);
+      let html = "<table class='w-full'><tr><th>Barcode</th><th>Naam</th></tr>";
+      snap.forEach(d => html += `<tr><td>${d.id}</td><td>${d.data().name}</td></tr>`);
+      html += "</table>";
+      listOutput.innerHTML = html;
+    }
+
+    // Auto logout timer
+    let logoutTimer;
+    function resetLogoutTimer() {
+      clearTimeout(logoutTimer);
+      logoutTimer = setTimeout(() => {
+        handleLogout();
+        alert("Automatisch uitgelogd na 5 minuten.");
+      }, 5 * 60 * 1000);
+    }
+    document.addEventListener("keydown", resetLogoutTimer);
+    document.addEventListener("click", resetLogoutTimer);
+
+    function handleLogout() {
+      localStorage.removeItem("loggedInStudent");
+      showScreen("landing");
+    }
 
     // Events
-    initialStartButton.addEventListener("click", () => handleInitialScan(initialBarcodeInput.value.trim()));
-    initialBarcodeInput.addEventListener("keydown", e => { if (e.key === "Enter") handleInitialScan(initialBarcodeInput.value.trim()); });
-    barcodeInput.addEventListener("keydown", e => { if (e.key === "Enter") handleItemTransaction(barcodeInput.value.trim()); });
-    printButton.addEventListener("click", () => window.print());
-    logoutButton.addEventListener("click", () => { localStorage.removeItem("loggedInStudent"); showScreen("landing"); });
-    logoutButtonTeacher.addEventListener("click", () => { showScreen("landing"); });
-    resetButton.addEventListener("click", handleResetLoans);
-    importStudentsButton.addEventListener("click", handleImportStudents);
+    initialStartButton.addEventListener("click", () => {
+      const barcode = initialBarcodeInput.value.trim();
+      if (barcode) handleInitialScan(barcode);
+    });
+    initialBarcodeInput.addEventListener("keydown", e => {
+      if (e.key === "Enter") {
+        const barcode = initialBarcodeInput.value.trim();
+        if (barcode) handleInitialScan(barcode);
+      }
+    });
+    barcodeInput.addEventListener("keydown", e => {
+      if (e.key === "Enter") {
+        const barcode = barcodeInput.value.trim();
+        if (barcode) handleItemTransaction(barcode);
+      }
+    });
     addItemButton.addEventListener("click", handleAddItem);
+    updateItemButton.addEventListener("click", handleUpdateItem);
     addStudentButton.addEventListener("click", handleAddStudent);
+    resetButton.addEventListener("click", handleResetLoans);
+    listStudentsButton.addEventListener("click", listStudents);
+    listItemsButton.addEventListener("click", listItems);
+    printButton.addEventListener("click", () => window.print());
+    logoutButton.addEventListener("click", handleLogout);
+    logoutButtonTeacher.addEventListener("click", handleLogout);
 
-// Optional: Enter-toets support in de inputvelden
-    newItemNameInput.addEventListener("keydown", e => { if (e.key === "Enter") handleAddItem(); });
-    newStudentNameInput.addEventListener("keydown", e => { if (e.key === "Enter") handleAddStudent(); });
-
-
-    // Start
     window.onload = async () => {
       await signInAnonymously(auth);
-      await initializeMockData();
       onSnapshot(query(loansRef), snap => {
         const loans = snap.docs.map(d => ({ id: d.id, ...d.data() }));
         renderLoans(loans);
@@ -379,4 +413,3 @@ async function handleAddStudent() {
   </script>
 </body>
 </html>
-
