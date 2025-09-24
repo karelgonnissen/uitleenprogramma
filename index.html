@@ -20,6 +20,7 @@
       <div id="initialStatusMessage" class="hidden mt-4 p-3 rounded-lg text-white text-center"></div>
     </div>
 
+    
     <!-- Student View -->
     <div id="studentView" class="hidden">
       <div class="flex justify-between items-center mb-6">
@@ -50,7 +51,8 @@
       <button id="printButton" class="mt-4 bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg">Afdrukken</button>
     </div>
 
-    <!-- Teacher View -->
+
+        <!-- Teacher View -->
     <div id="teacherView" class="hidden">
       <div class="flex justify-between items-center mb-6">
         <h2 class="text-2xl font-bold text-green-600">Docentenpaneel</h2>
@@ -79,92 +81,33 @@
       </div>
 
       <!-- Leerlingen beheren -->
-      <!-- ... (zelfde als eerder, niet ingekort hier om lengte) ... -->
-
-      <!-- Leerkrachten beheren -->
-      <!-- ... idem ... -->
-
-      <!-- Overzichten -->
-      <!-- ... idem ... -->
-
-    </div>
-  </div>
-
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-    import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-    import { getFirestore, doc, getDoc, setDoc, collection, getDocs, deleteDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-
-    // ✅ Correcte Firebase-config
-    const firebaseConfig = {
-      apiKey: "AIzaSyBPJmJ736FjH8Uu0YmzyjiB5QVEsmjIftw",
-      authDomain: "uitleenprogramma.firebaseapp.com",
-      projectId: "uitleenprogramma",
-      storageBucket: "uitleenprogramma.appspot.com",
-      messagingSenderId: "477005056123",
-      appId: "1:477005056123:web:84985f84f5598c3cbafade",
-      measurementId: "G-FB2KDV3H0W"
-    };
-
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
-    const auth = getAuth(app);
-
-    // ... rest van je script met CRUD-functies, bulk import, eventlisteners ...
-  </script>
-</body>
-</html>
-<!DOCTYPE html>
-<html lang="nl">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Uitleenprogramma</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-</head>
-<body class="bg-gray-100 min-h-screen flex items-center justify-center">
-  <div class="bg-white shadow-xl rounded-2xl w-full max-w-6xl p-8">
-
-    <!-- Landing View -->
-    <div id="landingView">
-      <h1 class="text-4xl font-extrabold text-blue-600 text-center mb-4">📚 Uitleenprogramma</h1>
-      <p class="text-center text-gray-600 mb-6">Scan je barcode om te beginnen.</p>
-      <div class="flex gap-2">
-        <input id="initialBarcodeInput" class="flex-1 border border-gray-300 rounded-lg px-4 py-2" placeholder="Scan leerling- of docentbarcode..." />
-        <button id="initialStartButton" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg shadow">Start</button>
+      <div class="mb-8">
+        <h3 class="text-xl font-semibold mb-2">Leerlingen beheren</h3>
+        <div class="flex gap-2 mb-2">
+          <input id="newStudentBarcodeInput" class="flex-1 border px-2 py-1 rounded" placeholder="Barcode nieuwe leerling..." />
+          <input id="newStudentNameInput" class="flex-1 border px-2 py-1 rounded" placeholder="Naam..." />
+          <button id="addStudentButton" class="bg-green-600 text-white px-3 py-1 rounded">Toevoegen</button>
+        </div>
+        <div class="flex gap-2 mb-2">
+          <input id="editStudentBarcode" class="flex-1 border px-2 py-1 rounded" placeholder="Barcode leerling..." />
+          <input id="editStudentName" class="flex-1 border px-2 py-1 rounded" placeholder="Nieuwe naam..." />
+          <button id="updateStudentButton" class="bg-orange-500 text-white px-3 py-1 rounded">Aanpassen</button>
+        </div>
+        <div class="flex gap-2 mb-2">
+          <input id="deleteStudentBarcode" class="flex-1 border px-2 py-1 rounded" placeholder="Barcode leerling..." />
+          <button id="deleteStudentButton" class="bg-red-600 text-white px-3 py-1 rounded">Verwijderen</button>
+        </div>
+        <div class="mt-4">
+          <h4 class="font-semibold mb-1">Bulk import leerlingen (CSV)</h4>
+          <input type="file" id="bulkStudentsInput" accept=".csv" class="mb-2" />
+          <button id="bulkStudentsButton" class="bg-blue-600 text-white px-3 py-1 rounded">Importeer</button>
+          <div id="bulkStudentsStatus" class="hidden mt-2 p-2 rounded text-white"></div>
+        </div>
+        <div id="addStudentStatusMessage" class="hidden p-2 text-white rounded"></div>
       </div>
-      <div id="initialStatusMessage" class="hidden mt-4 p-3 rounded-lg text-white text-center"></div>
-    </div>
-    <!-- Student View -->
-    <div id="studentView" class="hidden">
-      <div class="flex justify-between items-center mb-6">
-        <h2 class="text-2xl font-bold text-blue-600">Studentenpaneel</h2>
-        <button id="logoutButton" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg">Uitloggen</button>
-      </div>
-      <p id="userIdDisplay" class="font-medium text-gray-700 mb-4"></p>
-      <div class="flex gap-2 mb-4">
-        <input id="barcodeInput" class="flex-1 border border-gray-300 rounded-lg px-4 py-2" placeholder="Scan itembarcode..." />
-      </div>
-      <div id="statusMessage" class="hidden mb-4 p-3 rounded-lg text-white"></div>
-      <h3 class="text-xl font-semibold mb-2">Uitgeleende items</h3>
-      <div class="overflow-x-auto rounded-lg shadow">
-        <table class="w-full text-left border-collapse">
-          <thead class="bg-blue-600 text-white">
-            <tr>
-              <th class="px-4 py-2">Artikel</th>
-              <th class="px-4 py-2">Leerling</th>
-              <th class="px-4 py-2">Datum</th>
-              <th class="px-4 py-2">Barcode</th>
-              <th class="px-4 py-2">Status</th>
-            </tr>
-          </thead>
-          <tbody id="loanTableBody" class="divide-y divide-gray-200"></tbody>
-        </table>
-      </div>
-      <div id="noLoansMessage" class="hidden text-gray-500 mt-2 text-center">Geen items uitgeleend.</div>
-      <button id="printButton" class="mt-4 bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg">Afdrukken</button>
-    </div>
-      <!-- Leerkrachten beheren -->
+
+
+            <!-- Leerkrachten beheren -->
       <div class="mb-8">
         <h3 class="text-xl font-semibold mb-2">Leerkrachten beheren</h3>
         <div class="flex gap-2 mb-2">
@@ -205,7 +148,11 @@
       </div>
     </div>
   </div>
-  <script type="module">
+
+
+
+
+    <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
     import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
     import { getFirestore, doc, getDoc, setDoc, collection, getDocs, deleteDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
