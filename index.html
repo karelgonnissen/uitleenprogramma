@@ -149,16 +149,16 @@
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
     import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-    import { getFirestore, doc, getDoc, setDoc, collection, query, onSnapshot, getDocs, deleteDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+    import { getFirestore, doc, getDoc, setDoc, collection, getDocs, deleteDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
-    const firebaseConfig = { /* jouw config hier */ };
+    // ⚠️ Vul hier je Firebase-config in
+    const firebaseConfig = { /* jouw config */ };
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
     const auth = getAuth(app);
 
     const studentsRef = collection(db, "students");
     const itemsRef = collection(db, "items");
-    const loansRef = collection(db, "loans");
     const teachersRef = collection(db, "teachers");
 
     function showMessage(msg, cls, target) {
@@ -168,7 +168,7 @@
       setTimeout(() => target.classList.add("hidden"), 4000);
     }
 
-    // 🔹 CRUD helpers
+    // Helpers
     async function addDocTo(ref, barcode, name, target) {
       if (!barcode || !name) return showMessage("Vul barcode en naam in.", "bg-yellow-500", target);
       const snap = await getDoc(doc(ref, barcode));
@@ -188,14 +188,9 @@
       await deleteDoc(d);
       showMessage("Verwijderd!", "bg-green-500", target);
     }
-
-    // 🔹 Bulk import
     async function handleBulkImport(fileInput, collectionRef, statusTarget) {
       const file = fileInput.files[0];
-      if (!file) {
-        showMessage("Geen bestand gekozen.", "bg-yellow-500", statusTarget);
-        return;
-      }
+      if (!file) return showMessage("Geen bestand gekozen.", "bg-yellow-500", statusTarget);
       try {
         const text = await file.text();
         const lines = text.split("\n").map(l => l.trim()).filter(l => l);
@@ -214,7 +209,6 @@
       }
     }
 
-    // 🔹 Lists & CSV
     function renderList(docs, target) {
       let html = "<table class='w-full border'><tr><th>Barcode</th><th>Naam</th></tr>";
       docs.forEach(d => html += `<tr><td>${d.id}</td><td>${d.data().name}</td></tr>`);
@@ -228,35 +222,112 @@
       document.body.appendChild(a); a.click(); document.body.removeChild(a);
     }
 
-    // Events
-    // Leerlingen
-    addStudentButton.onclick = () => addDocTo(studentsRef, newStudentBarcodeInput.value.trim(), newStudentNameInput.value.trim(), addStudentStatusMessage);
-    updateStudentButton.onclick = () => updateDocIn(studentsRef, editStudentBarcode.value.trim(), editStudentName.value.trim(), addStudentStatusMessage);
-    deleteStudentButton.onclick = () => deleteDocFrom(studentsRef, deleteStudentBarcode.value.trim(), addStudentStatusMessage);
-    bulkStudentsButton.onclick = () => handleBulkImport(bulkStudentsInput, studentsRef, bulkStudentsStatus);
+    // Event listeners
+    document.getElementById("addStudentButton").onclick = () =>
+      addDocTo(studentsRef,
+        document.getElementById("newStudentBarcodeInput").value.trim(),
+        document.getElementById("newStudentNameInput").value.trim(),
+        document.getElementById("addStudentStatusMessage"));
 
-    // Leerkrachten
-    addTeacherButton.onclick = () => addDocTo(teachersRef, newTeacherBarcodeInput.value.trim(), newTeacherNameInput.value.trim(), addTeacherStatusMessage);
-    updateTeacherButton.onclick = () => updateDocIn(teachersRef, editTeacherBarcode.value.trim(), editTeacherName.value.trim(), addTeacherStatusMessage);
-    deleteTeacherButton.onclick = () => deleteDocFrom(teachersRef, deleteTeacherBarcode.value.trim(), addTeacherStatusMessage);
-    bulkTeachersButton.onclick = () => handleBulkImport(bulkTeachersInput, teachersRef, bulkTeachersStatus);
+    document.getElementById("updateStudentButton").onclick = () =>
+      updateDocIn(studentsRef,
+        document.getElementById("editStudentBarcode").value.trim(),
+        document.getElementById("editStudentName").value.trim(),
+        document.getElementById("addStudentStatusMessage"));
 
-    // Items
-    addItemButton.onclick = () => addDocTo(itemsRef, newItemBarcodeInput.value.trim(), newItemNameInput.value.trim(), addItemStatusMessage);
-    updateItemButton.onclick = () => updateDocIn(itemsRef, editItemBarcode.value.trim(), editItemName.value.trim(), addItemStatusMessage);
-    deleteItemButton.onclick = () => deleteDocFrom(itemsRef, deleteItemBarcode.value.trim(), deleteItemStatusMessage);
+    document.getElementById("deleteStudentButton").onclick = () =>
+      deleteDocFrom(studentsRef,
+        document.getElementById("deleteStudentBarcode").value.trim(),
+        document.getElementById("addStudentStatusMessage"));
 
-    // Lijsten
-    listStudentsButton.onclick = async () => renderList(await getDocs(studentsRef), listOutput);
-    listItemsButton.onclick = async () => renderList(await getDocs(itemsRef), listOutput);
-    listTeachersButton.onclick = async () => renderList(await getDocs(teachersRef), listOutput);
+    document.getElementById("bulkStudentsButton").onclick = () =>
+      handleBulkImport(document.getElementById("bulkStudentsInput"), studentsRef, document.getElementById("bulkStudentsStatus"));
 
-    // Downloads
-    downloadStudentsButton.onclick = async () => downloadCSV((await getDocs(studentsRef)).docs.map(d => ({ barcode: d.id, name: d.data().name })), "leerlingen.csv");
-    downloadItemsButton.onclick = async () => downloadCSV((await getDocs(itemsRef)).docs.map(d => ({ barcode: d.id, name: d.data().name })), "items.csv");
-    downloadTeachersButton.onclick = async () => downloadCSV((await getDocs(teachersRef)).docs.map(d => ({ barcode: d.id, name: d.data().name })), "leerkrachten.csv");
+    document.getElementById("addTeacherButton").onclick = () =>
+      addDocTo(teachersRef,
+        document.getElementById("newTeacherBarcodeInput").value.trim(),
+        document.getElementById("newTeacherNameInput").value.trim(),
+        document.getElementById("addTeacherStatusMessage"));
 
-    window.onload = async () => { await signInAnonymously(auth); };
+    document.getElementById("updateTeacherButton").onclick = () =>
+      updateDocIn(teachersRef,
+        document.getElementById("editTeacherBarcode").value.trim(),
+        document.getElementById("editTeacherName").value.trim(),
+        document.getElementById("addTeacherStatusMessage"));
+
+    document.getElementById("deleteTeacherButton").onclick = () =>
+      deleteDocFrom(teachersRef,
+        document.getElementById("deleteTeacherBarcode").value.trim(),
+        document.getElementById("addTeacherStatusMessage"));
+
+    document.getElementById("bulkTeachersButton").onclick = () =>
+      handleBulkImport(document.getElementById("bulkTeachersInput"), teachersRef, document.getElementById("bulkTeachersStatus"));
+
+    document.getElementById("addItemButton").onclick = () =>
+      addDocTo(itemsRef,
+        document.getElementById("newItemBarcodeInput").value.trim(),
+        document.getElementById("newItemNameInput").value.trim(),
+        document.getElementById("addItemStatusMessage"));
+
+    document.getElementById("updateItemButton").onclick = () =>
+      updateDocIn(itemsRef,
+        document.getElementById("editItemBarcode").value.trim(),
+        document.getElementById("editItemName").value.trim(),
+        document.getElementById("addItemStatusMessage"));
+
+    document.getElementById("deleteItemButton").onclick = () =>
+      deleteDocFrom(itemsRef,
+        document.getElementById("deleteItemBarcode").value.trim(),
+        document.getElementById("deleteItemStatusMessage"));
+
+    document.getElementById("listStudentsButton").onclick = async () =>
+      renderList(await getDocs(studentsRef), document.getElementById("listOutput"));
+    document.getElementById("listItemsButton").onclick = async () =>
+      renderList(await getDocs(itemsRef), document.getElementById("listOutput"));
+    document.getElementById("listTeachersButton").onclick = async () =>
+      renderList(await getDocs(teachersRef), document.getElementById("listOutput"));
+
+    document.getElementById("downloadStudentsButton").onclick = async () => {
+      const snaps = await getDocs(studentsRef);
+      const data = snaps.docs.map(d => ({ barcode: d.id, name: d.data().name }));
+      downloadCSV(data, "leerlingen.csv");
+    };
+    document.getElementById("downloadItemsButton").onclick = async () => {
+      const snaps = await getDocs(itemsRef);
+      const data = snaps.docs.map(d => ({ barcode: d.id, name: d.data().name }));
+      downloadCSV(data, "items.csv");
+    };
+    document.getElementById("downloadTeachersButton").onclick = async () => {
+      const snaps = await getDocs(teachersRef);
+      const data = snaps.docs.map(d => ({ barcode: d.id, name: d.data().name }));
+      downloadCSV(data, "leerkrachten.csv");
+    };
+
+    // Login
+    document.getElementById("initialStartButton").onclick = async () => {
+      const barcode = document.getElementById("initialBarcodeInput").value.trim();
+      const studentDoc = await getDoc(doc(studentsRef, barcode));
+      const teacherDoc = await getDoc(doc(teachersRef, barcode));
+      if (teacherDoc.exists()) {
+        document.getElementById("landingView").classList.add("hidden");
+        document.getElementById("teacherView").classList.remove("hidden");
+      } else if (studentDoc.exists()) {
+        document.getElementById("landingView").classList.add("hidden");
+        document.getElementById("studentView").classList.remove("hidden");
+        document.getElementById("userIdDisplay").textContent = studentDoc.data().name;
+      } else {
+        showMessage("Barcode niet gevonden.", "bg-red-500", document.getElementById("initialStatusMessage"));
+      }
+    };
+
+    document.getElementById("logoutButton").onclick = () => {
+      document.getElementById("studentView").classList.add("hidden");
+      document.getElementById("landingView").classList.remove("hidden");
+    };
+    document.getElementById("logoutButtonTeacher").onclick = () => {
+      document.getElementById("teacherView").classList.add("hidden");
+      document.getElementById("landingView").classList.remove("hidden");
+    };
   </script>
 </body>
 </html>
