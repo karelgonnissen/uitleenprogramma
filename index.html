@@ -5,10 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Uitleenprogramma</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
 </head>
 <body class="bg-gray-100 min-h-screen flex items-center justify-center">
-  <div class="bg-white shadow-xl rounded-2xl w-full max-w-5xl p-8">
+  <div class="bg-white shadow-xl rounded-2xl w-full max-w-6xl p-8">
 
     <!-- Landing View -->
     <div id="landingView">
@@ -58,64 +57,79 @@
         <button id="logoutButtonTeacher" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg">Uitloggen</button>
       </div>
 
-      <!-- Item toevoegen -->
-      <div>
-        <h3 class="font-semibold mb-2">Nieuw item</h3>
+      <!-- Items beheren -->
+      <div class="mb-8">
+        <h3 class="text-xl font-semibold mb-2">Items beheren</h3>
         <div class="flex gap-2 mb-2">
-          <input id="newItemBarcodeInput" class="flex-1 border border-gray-300 rounded-lg px-4 py-2" placeholder="Barcode..." />
-          <input id="newItemNameInput" class="flex-1 border border-gray-300 rounded-lg px-4 py-2" placeholder="Naam..." />
+          <input id="newItemBarcodeInput" class="flex-1 border px-2 py-1 rounded" placeholder="Barcode nieuw item..." />
+          <input id="newItemNameInput" class="flex-1 border px-2 py-1 rounded" placeholder="Naam nieuw item..." />
+          <button id="addItemButton" class="bg-blue-600 text-white px-3 py-1 rounded">Toevoegen</button>
         </div>
-        <button id="addItemButton" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg">Toevoegen</button>
-        <div id="addItemStatusMessage" class="hidden mt-2 p-3 rounded-lg text-white"></div>
+        <div class="flex gap-2 mb-2">
+          <input id="editItemBarcode" class="flex-1 border px-2 py-1 rounded" placeholder="Barcode bestaand item..." />
+          <input id="editItemName" class="flex-1 border px-2 py-1 rounded" placeholder="Nieuwe naam..." />
+          <button id="updateItemButton" class="bg-orange-500 text-white px-3 py-1 rounded">Aanpassen</button>
+        </div>
+        <div class="flex gap-2 mb-2">
+          <input id="deleteItemBarcode" class="flex-1 border px-2 py-1 rounded" placeholder="Barcode item..." />
+          <button id="deleteItemButton" class="bg-red-600 text-white px-3 py-1 rounded">Verwijderen</button>
+        </div>
+        <div id="addItemStatusMessage" class="hidden p-2 text-white rounded"></div>
+        <div id="deleteItemStatusMessage" class="hidden p-2 text-white rounded"></div>
       </div>
 
-      <!-- Item bewerken -->
-      <div class="mt-6">
-        <h3 class="font-semibold mb-2">Item aanpassen</h3>
+      <!-- Leerlingen beheren -->
+      <div class="mb-8">
+        <h3 class="text-xl font-semibold mb-2">Leerlingen beheren</h3>
         <div class="flex gap-2 mb-2">
-          <input id="editItemBarcode" class="flex-1 border border-gray-300 rounded-lg px-4 py-2" placeholder="Barcode bestaand item..." />
-          <input id="editItemName" class="flex-1 border border-gray-300 rounded-lg px-4 py-2" placeholder="Nieuwe naam..." />
+          <input id="newStudentBarcodeInput" class="flex-1 border px-2 py-1 rounded" placeholder="Barcode nieuwe leerling..." />
+          <input id="newStudentNameInput" class="flex-1 border px-2 py-1 rounded" placeholder="Naam..." />
+          <button id="addStudentButton" class="bg-green-600 text-white px-3 py-1 rounded">Toevoegen</button>
         </div>
-        <button id="updateItemButton" class="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-lg">Aanpassen</button>
+        <div class="flex gap-2 mb-2">
+          <input id="editStudentBarcode" class="flex-1 border px-2 py-1 rounded" placeholder="Barcode leerling..." />
+          <input id="editStudentName" class="flex-1 border px-2 py-1 rounded" placeholder="Nieuwe naam..." />
+          <button id="updateStudentButton" class="bg-orange-500 text-white px-3 py-1 rounded">Aanpassen</button>
+        </div>
+        <div class="flex gap-2 mb-2">
+          <input id="deleteStudentBarcode" class="flex-1 border px-2 py-1 rounded" placeholder="Barcode leerling..." />
+          <button id="deleteStudentButton" class="bg-red-600 text-white px-3 py-1 rounded">Verwijderen</button>
+        </div>
+        <div id="addStudentStatusMessage" class="hidden p-2 text-white rounded"></div>
       </div>
 
-      <!-- Leerling toevoegen -->
-      <div class="mt-6">
-        <h3 class="font-semibold mb-2">Nieuwe leerling</h3>
+      <!-- Leerkrachten beheren -->
+      <div class="mb-8">
+        <h3 class="text-xl font-semibold mb-2">Leerkrachten beheren</h3>
         <div class="flex gap-2 mb-2">
-          <input id="newStudentBarcodeInput" class="flex-1 border border-gray-300 rounded-lg px-4 py-2" placeholder="Barcode..." />
-          <input id="newStudentNameInput" class="flex-1 border border-gray-300 rounded-lg px-4 py-2" placeholder="Naam..." />
+          <input id="newTeacherBarcodeInput" class="flex-1 border px-2 py-1 rounded" placeholder="Barcode nieuwe leerkracht..." />
+          <input id="newTeacherNameInput" class="flex-1 border px-2 py-1 rounded" placeholder="Naam..." />
+          <button id="addTeacherButton" class="bg-green-600 text-white px-3 py-1 rounded">Toevoegen</button>
         </div>
-        <button id="addStudentButton" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg">Toevoegen</button>
-        <div id="addStudentStatusMessage" class="hidden mt-2 p-3 rounded-lg text-white"></div>
-      </div>
-
-      <!-- Bulk import -->
-      <div class="mt-6 border-t pt-4">
-        <h3 class="font-semibold mb-2">Leerlingen importeren</h3>
-        <input type="file" id="csvFileInput" accept=".csv" class="mb-2" />
-        <button id="importStudentsButton" class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg">
-          Importeren uit CSV
-        </button>
-        <div id="importStatusMessage" class="hidden mt-2 p-3 rounded-lg text-white"></div>
+        <div class="flex gap-2 mb-2">
+          <input id="editTeacherBarcode" class="flex-1 border px-2 py-1 rounded" placeholder="Barcode leerkracht..." />
+          <input id="editTeacherName" class="flex-1 border px-2 py-1 rounded" placeholder="Nieuwe naam..." />
+          <button id="updateTeacherButton" class="bg-orange-500 text-white px-3 py-1 rounded">Aanpassen</button>
+        </div>
+        <div class="flex gap-2 mb-2">
+          <input id="deleteTeacherBarcode" class="flex-1 border px-2 py-1 rounded" placeholder="Barcode leerkracht..." />
+          <button id="deleteTeacherButton" class="bg-red-600 text-white px-3 py-1 rounded">Verwijderen</button>
+        </div>
+        <div id="addTeacherStatusMessage" class="hidden p-2 text-white rounded"></div>
       </div>
 
       <!-- Overzichten -->
-      <div class="mt-6 border-t pt-4">
-        <h3 class="font-semibold mb-2">Overzichten</h3>
-        <button id="listStudentsButton" class="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg mr-2">Toon leerlingenlijst</button>
-        <button id="listItemsButton" class="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg">Toon itemslijst</button>
-        <div id="listOutput" class="mt-4"></div>
-      </div>
-
-      <!-- Reset leningen -->
-      <div class="mt-6 border-t pt-4">
-        <h3 class="font-semibold mb-2 text-red-600">Beheer</h3>
-        <div class="flex gap-2">
-          <input id="resetInput" type="password" class="flex-1 border border-gray-300 rounded-lg px-4 py-2" placeholder="Bevestiging..." />
-          <button id="resetButton" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg">Reset leningen</button>
+      <div>
+        <h3 class="text-xl font-semibold mb-2">Overzichten</h3>
+        <button id="listStudentsButton" class="bg-gray-600 text-white px-3 py-1 rounded mr-2">Toon leerlingen</button>
+        <button id="listItemsButton" class="bg-gray-600 text-white px-3 py-1 rounded mr-2">Toon items</button>
+        <button id="listTeachersButton" class="bg-gray-600 text-white px-3 py-1 rounded">Toon leerkrachten</button>
+        <div class="mt-2">
+          <button id="downloadStudentsButton" class="bg-blue-600 text-white px-3 py-1 rounded mr-2">Download leerlingen</button>
+          <button id="downloadItemsButton" class="bg-blue-600 text-white px-3 py-1 rounded mr-2">Download items</button>
+          <button id="downloadTeachersButton" class="bg-blue-600 text-white px-3 py-1 rounded">Download leerkrachten</button>
         </div>
-        <div id="resetStatusMessage" class="hidden mt-2 p-3 rounded-lg text-white"></div>
+        <div id="listOutput" class="mt-4"></div>
       </div>
     </div>
   </div>
@@ -125,16 +139,7 @@
     import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
     import { getFirestore, doc, getDoc, setDoc, collection, query, onSnapshot, getDocs, addDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
-    const firebaseConfig = {
-      apiKey: "AIzaSyBPJmJ736FjH8Uu0YmzyjiB5QVEsmjIftw",
-      authDomain: "uitleenprogramma.firebaseapp.com",
-      projectId: "uitleenprogramma",
-      storageBucket: "uitleenprogramma.firebasestorage.app",
-      messagingSenderId: "477005056123",
-      appId: "1:477005056123:web:84985f84f5598c3cbafade",
-      measurementId: "G-FB2KDV3H0W"
-    };
-
+    const firebaseConfig = { /* jouw config hier */ };
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
     const auth = getAuth(app);
@@ -144,272 +149,72 @@
     const loansRef = collection(db, "loans");
     const teachersRef = collection(db, "teachers");
 
-    // UI refs
-    const landingView = document.getElementById("landingView");
-    const studentView = document.getElementById("studentView");
-    const teacherView = document.getElementById("teacherView");
-    const initialBarcodeInput = document.getElementById("initialBarcodeInput");
-    const initialStartButton = document.getElementById("initialStartButton");
-    const initialStatusMessage = document.getElementById("initialStatusMessage");
-    const barcodeInput = document.getElementById("barcodeInput");
-    const statusMessage = document.getElementById("statusMessage");
-    const loanTableBody = document.getElementById("loanTableBody");
-    const noLoansMessage = document.getElementById("noLoansMessage");
-    const userIdDisplay = document.getElementById("userIdDisplay");
-    const printButton = document.getElementById("printButton");
-    const logoutButton = document.getElementById("logoutButton");
-    const logoutButtonTeacher = document.getElementById("logoutButtonTeacher");
-    const newItemBarcodeInput = document.getElementById("newItemBarcodeInput");
-    const newItemNameInput = document.getElementById("newItemNameInput");
-    const addItemButton = document.getElementById("addItemButton");
-    const addItemStatusMessage = document.getElementById("addItemStatusMessage");
-    const editItemBarcode = document.getElementById("editItemBarcode");
-    const editItemName = document.getElementById("editItemName");
-    const updateItemButton = document.getElementById("updateItemButton");
-    const newStudentBarcodeInput = document.getElementById("newStudentBarcodeInput");
-    const newStudentNameInput = document.getElementById("newStudentNameInput");
-    const addStudentButton = document.getElementById("addStudentButton");
-    const addStudentStatusMessage = document.getElementById("addStudentStatusMessage");
-    const resetButton = document.getElementById("resetButton");
-    const resetInput = document.getElementById("resetInput");
-    const resetStatusMessage = document.getElementById("resetStatusMessage");
-    const csvFileInput = document.getElementById("csvFileInput");
-    const importStudentsButton = document.getElementById("importStudentsButton");
-    const importStatusMessage = document.getElementById("importStatusMessage");
-    const listStudentsButton = document.getElementById("listStudentsButton");
-    const listItemsButton = document.getElementById("listItemsButton");
-    const listOutput = document.getElementById("listOutput");
-
     function showMessage(msg, cls, target) {
       target.textContent = msg;
-      target.className = "mt-2 p-3 rounded-lg text-white text-center " + cls;
+      target.className = "mt-2 p-2 rounded text-white text-center " + cls;
       target.classList.remove("hidden");
       setTimeout(() => target.classList.add("hidden"), 4000);
     }
-    function showScreen(screen) {
-      landingView.classList.add("hidden");
-      studentView.classList.add("hidden");
-      teacherView.classList.add("hidden");
-      if (screen === "landing") landingView.classList.remove("hidden");
-      if (screen === "student") studentView.classList.remove("hidden");
-      if (screen === "teacher") teacherView.classList.remove("hidden");
+
+    // 🔹 CRUD helpers (items, students, teachers)
+    async function addDocTo(ref, barcode, name, target) {
+      if (!barcode || !name) return showMessage("Vul barcode en naam in.", "bg-yellow-500", target);
+      const snap = await getDoc(doc(ref, barcode));
+      if (snap.exists()) return showMessage("Bestaat al.", "bg-red-500", target);
+      await setDoc(doc(ref, barcode), { name });
+      showMessage("Toegevoegd!", "bg-green-500", target);
     }
-    function renderLoans(loans) {
-      loanTableBody.innerHTML = "";
-      if (loans.length === 0) {
-        noLoansMessage.classList.remove("hidden");
-      } else {
-        noLoansMessage.classList.add("hidden");
-        loans.forEach(l => {
-          const row = document.createElement("tr");
-          row.innerHTML = `
-            <td class="px-4 py-2">${l.item_name}</td>
-            <td class="px-4 py-2">${l.student_name}</td>
-            <td class="px-4 py-2">${new Date(l.loan_date).toLocaleDateString()}</td>
-            <td class="px-4 py-2">${l.item_barcode}</td>
-            <td class="px-4 py-2 ${l.status === 'in behandeling' ? 'bg-orange-500 text-white rounded' : ''}">
-              ${l.status || ''}
-            </td>
-          `;
-          loanTableBody.appendChild(row);
-        });
-      }
+    async function updateDocIn(ref, barcode, name, target) {
+      const d = doc(ref, barcode);
+      if (!(await getDoc(d)).exists()) return showMessage("Niet gevonden.", "bg-red-500", target);
+      await setDoc(d, { name }, { merge: true });
+      showMessage("Aangepast!", "bg-green-500", target);
+    }
+    async function deleteDocFrom(ref, barcode, target) {
+      const d = doc(ref, barcode);
+      if (!(await getDoc(d)).exists()) return showMessage("Niet gevonden.", "bg-red-500", target);
+      await deleteDoc(d);
+      showMessage("Verwijderd!", "bg-green-500", target);
     }
 
-    async function handleInitialScan(barcode) {
-      const teacherDoc = await getDoc(doc(teachersRef, barcode));
-      if (teacherDoc.exists()) {
-        showScreen("teacher");
-        return;
-      }
-      const studentDoc = await getDoc(doc(studentsRef, barcode));
-      if (studentDoc.exists()) {
-        localStorage.setItem("loggedInStudent", JSON.stringify({ barcode, name: studentDoc.data().name }));
-        showScreen("student");
-        userIdDisplay.textContent = studentDoc.data().name;
-        return;
-      }
-      showMessage("Barcode niet gevonden", "bg-red-500", initialStatusMessage);
-    }
-
-    async function handleItemTransaction(itemBarcode) {
-      const loggedInStudent = JSON.parse(localStorage.getItem("loggedInStudent"));
-      if (!loggedInStudent) {
-        showMessage("Geen leerling actief", "bg-yellow-500", statusMessage);
-        return;
-      }
-      const itemDoc = await getDoc(doc(itemsRef, itemBarcode));
-      if (!itemDoc.exists()) {
-        showMessage("Item niet gevonden", "bg-red-500", statusMessage);
-        return;
-      }
-      const loansSnap = await getDocs(loansRef);
-      const existing = loansSnap.docs.find(d => d.data().item_barcode === itemBarcode);
-      if (existing) {
-        if (existing.data().student_barcode === loggedInStudent.barcode) {
-          await deleteDoc(doc(loansRef, existing.id));
-          showMessage("Item ingeleverd", "bg-green-500", statusMessage);
-        } else {
-          showMessage("Item al uitgeleend", "bg-yellow-500", statusMessage);
-        }
-      } else {
-        await addDoc(loansRef, {
-          student_barcode: loggedInStudent.barcode,
-          student_name: loggedInStudent.name,
-          item_barcode: itemBarcode,
-          item_name: itemDoc.data().name,
-          loan_date: new Date().toISOString(),
-          status: "in behandeling"
-        });
-        showMessage("Item uitgeleend", "bg-green-500", statusMessage);
-      }
-      barcodeInput.value = ""; // veld leegmaken
-    }
-
-    async function handleAddItem() {
-      const barcode = newItemBarcodeInput.value.trim();
-      const name = newItemNameInput.value.trim();
-      if (!barcode || !name) {
-        showMessage("Vul barcode én naam in.", "bg-yellow-500", addItemStatusMessage);
-        return;
-      }
-      try {
-        const ref = doc(itemsRef, barcode);
-        const snap = await getDoc(ref);
-        if (snap.exists()) {
-          showMessage(`Item met barcode '${barcode}' bestaat al.`, "bg-yellow-500", addItemStatusMessage);
-        } else {
-          await setDoc(ref, { name });
-          showMessage(`Item '${name}' toegevoegd.`, "bg-green-500", addItemStatusMessage);
-        }
-      } catch (err) {
-        console.error(err);
-        showMessage("Fout bij toevoegen van item.", "bg-red-500", addItemStatusMessage);
-      }
-      newItemBarcodeInput.value = "";
-      newItemNameInput.value = "";
-    }
-
-    async function handleUpdateItem() {
-      const barcode = editItemBarcode.value.trim();
-      const newName = editItemName.value.trim();
-      if (!barcode || !newName) return;
-      const ref = doc(itemsRef, barcode);
-      const snap = await getDoc(ref);
-      if (!snap.exists()) {
-        showMessage("Item niet gevonden", "bg-red-500", addItemStatusMessage);
-        return;
-      }
-      await setDoc(ref, { name: newName }, { merge: true });
-      showMessage(`Item '${barcode}' aangepast.`, "bg-green-500", addItemStatusMessage);
-      editItemBarcode.value = "";
-      editItemName.value = "";
-    }
-
-    async function handleAddStudent() {
-      const barcode = newStudentBarcodeInput.value.trim();
-      const name = newStudentNameInput.value.trim();
-      if (!barcode || !name) {
-        showMessage("Vul barcode én naam in.", "bg-yellow-500", addStudentStatusMessage);
-        return;
-      }
-      try {
-        const ref = doc(studentsRef, barcode);
-        const snap = await getDoc(ref);
-        if (snap.exists()) {
-          showMessage(`Leerling met barcode '${barcode}' bestaat al.`, "bg-yellow-500", addStudentStatusMessage);
-        } else {
-          await setDoc(ref, { name });
-          showMessage(`Leerling '${name}' toegevoegd.`, "bg-green-500", addStudentStatusMessage);
-        }
-      } catch (err) {
-        console.error(err);
-        showMessage("Fout bij toevoegen van leerling.", "bg-red-500", addStudentStatusMessage);
-      }
-      newStudentBarcodeInput.value = "";
-      newStudentNameInput.value = "";
-    }
-
-    async function handleResetLoans() {
-      if (resetInput.value !== "reset") {
-        showMessage("Onjuiste bevestiging", "bg-red-500", resetStatusMessage);
-        return;
-      }
-      const snap = await getDocs(loansRef);
-      for (const d of snap.docs) {
-        await deleteDoc(d.ref);
-      }
-      showMessage("Alle leningen gewist.", "bg-green-500", resetStatusMessage);
-      resetInput.value = "";
-    }
-
-    async function listStudents() {
-      const snap = await getDocs(studentsRef);
-      let html = "<table class='w-full'><tr><th>Barcode</th><th>Naam</th></tr>";
-      snap.forEach(d => html += `<tr><td>${d.id}</td><td>${d.data().name}</td></tr>`);
+    // 🔹 Lists & CSV
+    function renderList(docs, target) {
+      let html = "<table class='w-full border'><tr><th>Barcode</th><th>Naam</th></tr>";
+      docs.forEach(d => html += `<tr><td>${d.id}</td><td>${d.data().name}</td></tr>`);
       html += "</table>";
-      listOutput.innerHTML = html;
+      target.innerHTML = html;
     }
-    async function listItems() {
-      const snap = await getDocs(itemsRef);
-      let html = "<table class='w-full'><tr><th>Barcode</th><th>Naam</th></tr>";
-      snap.forEach(d => html += `<tr><td>${d.id}</td><td>${d.data().name}</td></tr>`);
-      html += "</table>";
-      listOutput.innerHTML = html;
-    }
-
-    // Auto logout timer
-    let logoutTimer;
-    function resetLogoutTimer() {
-      clearTimeout(logoutTimer);
-      logoutTimer = setTimeout(() => {
-        handleLogout();
-        alert("Automatisch uitgelogd na 5 minuten.");
-      }, 5 * 60 * 1000);
-    }
-    document.addEventListener("keydown", resetLogoutTimer);
-    document.addEventListener("click", resetLogoutTimer);
-
-    function handleLogout() {
-      localStorage.removeItem("loggedInStudent");
-      showScreen("landing");
+    function downloadCSV(data, filename) {
+      const csv = [Object.keys(data[0]).join(","), ...data.map(r => Object.values(r).join(","))].join("\n");
+      const url = URL.createObjectURL(new Blob([csv], { type: "text/csv" }));
+      const a = Object.assign(document.createElement("a"), { href: url, download: filename });
+      document.body.appendChild(a); a.click(); document.body.removeChild(a);
     }
 
-    // Events
-    initialStartButton.addEventListener("click", () => {
-      const barcode = initialBarcodeInput.value.trim();
-      if (barcode) handleInitialScan(barcode);
-    });
-    initialBarcodeInput.addEventListener("keydown", e => {
-      if (e.key === "Enter") {
-        const barcode = initialBarcodeInput.value.trim();
-        if (barcode) handleInitialScan(barcode);
-      }
-    });
-    barcodeInput.addEventListener("keydown", e => {
-      if (e.key === "Enter") {
-        const barcode = barcodeInput.value.trim();
-        if (barcode) handleItemTransaction(barcode);
-      }
-    });
-    addItemButton.addEventListener("click", handleAddItem);
-    updateItemButton.addEventListener("click", handleUpdateItem);
-    addStudentButton.addEventListener("click", handleAddStudent);
-    resetButton.addEventListener("click", handleResetLoans);
-    listStudentsButton.addEventListener("click", listStudents);
-    listItemsButton.addEventListener("click", listItems);
-    printButton.addEventListener("click", () => window.print());
-    logoutButton.addEventListener("click", handleLogout);
-    logoutButtonTeacher.addEventListener("click", handleLogout);
+    // Events (voorbeeld voor leerlingen → herhaal voor items/teachers)
+    document.getElementById("addStudentButton").onclick = () => addDocTo(studentsRef,
+      newStudentBarcodeInput.value.trim(), newStudentNameInput.value.trim(), addStudentStatusMessage);
+    document.getElementById("updateStudentButton").onclick = () => updateDocIn(studentsRef,
+      editStudentBarcode.value.trim(), editStudentName.value.trim(), addStudentStatusMessage);
+    document.getElementById("deleteStudentButton").onclick = () => deleteDocFrom(studentsRef,
+      deleteStudentBarcode.value.trim(), addStudentStatusMessage);
 
-    window.onload = async () => {
-      await signInAnonymously(auth);
-      onSnapshot(query(loansRef), snap => {
-        const loans = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-        renderLoans(loans);
-      });
-      showScreen("landing");
-    };
+    document.getElementById("addTeacherButton").onclick = () => addDocTo(teachersRef,
+      newTeacherBarcodeInput.value.trim(), newTeacherNameInput.value.trim(), addTeacherStatusMessage);
+    document.getElementById("updateTeacherButton").onclick = () => updateDocIn(teachersRef,
+      editTeacherBarcode.value.trim(), editTeacherName.value.trim(), addTeacherStatusMessage);
+    document.getElementById("deleteTeacherButton").onclick = () => deleteDocFrom(teachersRef,
+      deleteTeacherBarcode.value.trim(), addTeacherStatusMessage);
+
+    document.getElementById("listStudentsButton").onclick = async () => renderList(await getDocs(studentsRef), listOutput);
+    document.getElementById("listItemsButton").onclick = async () => renderList(await getDocs(itemsRef), listOutput);
+    document.getElementById("listTeachersButton").onclick = async () => renderList(await getDocs(teachersRef), listOutput);
+
+    document.getElementById("downloadStudentsButton").onclick = async () => downloadCSV((await getDocs(studentsRef)).docs.map(d => ({ barcode: d.id, name: d.data().name })), "leerlingen.csv");
+    document.getElementById("downloadItemsButton").onclick = async () => downloadCSV((await getDocs(itemsRef)).docs.map(d => ({ barcode: d.id, name: d.data().name })), "items.csv");
+    document.getElementById("downloadTeachersButton").onclick = async () => downloadCSV((await getDocs(teachersRef)).docs.map(d => ({ barcode: d.id, name: d.data().name })), "leerkrachten.csv");
+
+    window.onload = async () => { await signInAnonymously(auth); };
   </script>
 </body>
 </html>
