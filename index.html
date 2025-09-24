@@ -152,7 +152,19 @@
     import { getFirestore, doc, getDoc, setDoc, collection, getDocs, deleteDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
     // ⚠️ Vul hier je Firebase-config in
-    const firebaseConfig = { /* jouw config */ };
+  const firebaseConfig = {
+  apiKey: "AIzaSyBPJmJ736FjH8Uu0YmzyjiB5QVEsmjIftw",
+  authDomain: "uitleenprogramma.firebaseapp.com",
+  projectId: "uitleenprogramma",
+  storageBucket: "uitleenprogramma.firebasestorage.app",
+  messagingSenderId: "477005056123",
+  appId: "1:477005056123:web:84985f84f5598c3cbafade",
+  measurementId: "G-FB2KDV3H0W"
+};
+
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+const analytics = getAnalytics(app);};
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
     const auth = getAuth(app);
@@ -331,3 +343,4 @@
   </script>
 </body>
 </html>
+
