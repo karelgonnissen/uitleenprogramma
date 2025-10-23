@@ -9,7 +9,7 @@
 <body class="bg-gray-100 min-h-screen flex items-center justify-center">
   <div class="bg-white shadow-xl rounded-2xl w-full max-w-6xl p-8">
 
-    <!-- Landing View -->
+    <!-- 🔹 Startpagina -->
     <div id="landingView">
       <h1 class="text-4xl font-extrabold text-blue-600 text-center mb-4">📚 Uitleenprogramma</h1>
       <p class="text-center text-gray-600 mb-6">Scan je barcode om te beginnen.</p>
@@ -20,7 +20,7 @@
       <div id="initialStatusMessage" class="hidden mt-4 p-3 rounded-lg text-white text-center"></div>
     </div>
 
-    <!-- Student View -->
+    <!-- 🔹 Studentenpaneel -->
     <div id="studentView" class="hidden">
       <div class="flex justify-between items-center mb-6">
         <h2 class="text-2xl font-bold text-blue-600">Studentenpaneel</h2>
@@ -52,18 +52,20 @@
       <div id="noLoansMessage" class="hidden text-gray-500 mt-2 text-center">Geen items uitgeleend.</div>
     </div>
 
-    <!-- Teacher View -->
+    <!-- 🔹 Docentenpaneel -->
     <div id="teacherView" class="hidden">
       <div class="flex justify-between items-center mb-6">
         <h2 class="text-2xl font-bold text-green-600">Docentenpaneel</h2>
         <button id="logoutButtonTeacher" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg">Uitloggen</button>
       </div>
 
+      <!-- Scansnelheid aanpassen -->
       <div class="mb-6">
         <label for="scanDelayRange" class="block text-gray-700 font-medium mb-2">Scansnelheid (pauze tussen scans): <span id="scanDelayLabel">1.5</span> sec</label>
         <input id="scanDelayRange" type="range" min="0.5" max="5" step="0.5" value="1.5" class="w-full">
       </div>
 
+      <!-- Items beheren -->
       <h3 class="text-xl font-semibold mb-2">Items beheren</h3>
       <div class="flex gap-2 mb-2">
         <input id="newItemBarcodeInput" class="flex-1 border px-2 py-1 rounded" placeholder="Barcode nieuw item..." />
@@ -80,6 +82,7 @@
         <button id="deleteItemButton" class="bg-red-600 text-white px-3 py-1 rounded">Verwijderen</button>
       </div>
 
+      <!-- Leerlingen beheren -->
       <h3 class="text-xl font-semibold mb-2">Leerlingen beheren</h3>
       <div class="flex gap-2 mb-2">
         <input id="newStudentBarcodeInput" class="flex-1 border px-2 py-1 rounded" placeholder="Barcode nieuwe leerling..." />
@@ -100,6 +103,7 @@
         <button id="clearLoansButton" class="bg-purple-600 text-white px-3 py-1 rounded">Leeg uitleenlijst (bewaar uitgeleend)</button>
       </div>
 
+      <!-- Leerkrachten beheren -->
       <h3 class="text-xl font-semibold mb-2">Leerkrachten beheren</h3>
       <div class="flex gap-2 mb-2">
         <input id="newTeacherBarcodeInput" class="flex-1 border px-2 py-1 rounded" placeholder="Barcode nieuwe leerkracht..." />
@@ -116,6 +120,7 @@
         <button id="deleteTeacherButton" class="bg-red-600 text-white px-3 py-1 rounded">Verwijderen</button>
       </div>
 
+      <!-- Overzichten -->
       <h3 class="text-xl font-semibold mb-2">Overzichten en afdrukken</h3>
       <div class="flex flex-wrap gap-2 mb-2">
         <button id="listStudentsButton" class="bg-gray-600 text-white px-3 py-1 rounded">Toon leerlingen</button>
@@ -133,63 +138,419 @@
     </div>
   </div>
 
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-    import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-    import { getFirestore, doc, getDoc, setDoc, collection, getDocs, deleteDoc, addDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+<!-- 🔧 SCRIPTSECTIE - Functionaliteit uitleenprogramma -->
+<script type="module">
+// ==========================================================
+// 1️⃣ Firebase-instellingen
+// ==========================================================
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import { getFirestore, doc, getDoc, setDoc, collection, getDocs, deleteDoc, addDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
-    const firebaseConfig = {
-      apiKey: "AIzaSyBPJmJ736FjH8Uu0YmzyjiB5QVEsmjIftw",
-      authDomain: "uitleenprogramma.firebaseapp.com",
-      projectId: "uitleenprogramma",
-      storageBucket: "uitleenprogramma.appspot.com",
-      messagingSenderId: "477005056123",
-      appId: "1:477005056123:web:84985f84f5598c3cbafade",
-      measurementId: "G-FB2KDV3H0W"
-    };
+const firebaseConfig = {
+  apiKey: "AIzaSyBPJmJ736FjH8Uu0YmzyjiB5QVEsmjIftw",
+  authDomain: "uitleenprogramma.firebaseapp.com",
+  projectId: "uitleenprogramma",
+  storageBucket: "uitleenprogramma.appspot.com",
+  messagingSenderId: "477005056123",
+  appId: "1:477005056123:web:84985f84f5598c3cbafade",
+  measurementId: "G-FB2KDV3H0W"
+};
 
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
-    const auth = getAuth(app);
-    signInAnonymously(auth);
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+const auth = getAuth(app);
+signInAnonymously(auth).catch(console.error);
 
-    const studentsRef = collection(db, "students");
-    const itemsRef = collection(db, "items");
-    const teachersRef = collection(db, "teachers");
-    const loansRef = collection(db, "loans");
+// Firestore collecties
+const studentsRef = collection(db, "students");
+const teachersRef = collection(db, "teachers");
+const itemsRef = collection(db, "items");
+const loansRef = collection(db, "loans");
 
-    // ✅ LOGIN FIX
-    document.getElementById("initialStartButton").onclick = async () => {
-      const barcode = document.getElementById("initialBarcodeInput").value.trim();
-      if (!barcode) return;
-      const studentDoc = await getDoc(doc(studentsRef, barcode));
-      const teacherDoc = await getDoc(doc(teachersRef, barcode));
+// Veelgebruikte DOM-refs
+const landingView = document.getElementById("landingView");
+const studentView = document.getElementById("studentView");
+const teacherView = document.getElementById("teacherView");
 
-      if (teacherDoc.exists()) {
-        document.getElementById("landingView").classList.add("hidden");
-        document.getElementById("teacherView").classList.remove("hidden");
-      } else if (studentDoc.exists()) {
-        document.getElementById("landingView").classList.add("hidden");
-        document.getElementById("studentView").classList.remove("hidden");
-        document.getElementById("userIdDisplay").textContent = studentDoc.data().name;
-      } else {
-        const msg = document.getElementById("initialStatusMessage");
-        msg.textContent = "Barcode niet gevonden.";
-        msg.className = "mt-4 p-3 rounded-lg text-white text-center bg-red-500";
-        msg.classList.remove("hidden");
-        setTimeout(() => msg.classList.add("hidden"), 4000);
+// ==========================================================
+// 2️⃣ Hulpfuncties (meldingen, tabellen, print)
+// ==========================================================
+function showMessage(msg, cls, target) {
+  target.textContent = msg;
+  target.className = "mt-2 p-2 rounded text-white text-center " + cls;
+  target.classList.remove("hidden");
+  setTimeout(() => target.classList.add("hidden"), 4000);
+}
+
+function formatDateBE(date) {
+  const d = (date instanceof Date) ? date : new Date(date);
+  return d.toLocaleDateString("nl-BE"); // dd/mm/jjjj
+}
+
+function renderList(snaps, targetEl) {
+  let html = "<table class='w-full border'><thead><tr><th class='text-left p-2'>Barcode</th><th class='text-left p-2'>Naam</th></tr></thead><tbody>";
+  snaps.forEach(d => html += `<tr class='border-t'><td class='p-2'>${d.id}</td><td class='p-2'>${(d.data && d.data().name) || d.name || ''}</td></tr>`);
+  html += "</tbody></table>";
+  targetEl.innerHTML = html;
+  return html;
+}
+
+function printSection(html) {
+  const win = window.open('', '', 'height=700,width=900');
+  win.document.write('<html><head><title>Afdruk</title></head><body>');
+  win.document.write(html);
+  win.document.write('</body></html>');
+  win.document.close();
+  win.print();
+}
+
+// ==========================================================
+// 3️⃣ Scannerlogica + geluid
+// ==========================================================
+let scanDelay = 1500; // standaard 1,5s tussen scans (instelbaar in docentenpaneel)
+let scanRAF = null;   // requestAnimationFrame id
+let scanVideo = null; // onzichtbare video
+let scanStream = null; // MediaStream
+const scanStatus = document.getElementById("scanStatus");
+const beep = new Audio("https://actions.google.com/sounds/v1/alarms/beep_short.ogg");
+
+async function startScanner(targetInput, onCode) {
+  // Toon statuslabel
+  if (scanStatus) scanStatus.classList.remove("hidden");
+
+  // Browser support
+  if (!("BarcodeDetector" in window)) {
+    console.warn("BarcodeDetector niet ondersteund");
+    return;
+  }
+
+  // Camera starten (achtercamera indien beschikbaar)
+  scanStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
+  scanVideo = document.createElement("video");
+  scanVideo.srcObject = scanStream;
+  scanVideo.setAttribute("playsinline", true);
+  scanVideo.style.display = "none";
+  document.body.appendChild(scanVideo);
+  await scanVideo.play();
+
+  const detector = new BarcodeDetector({ formats: ["code_128", "ean_13", "qr_code"] });
+  let lastScanTime = 0;
+
+  const loop = async () => {
+    try {
+      const now = Date.now();
+      const codes = await detector.detect(scanVideo);
+      if (codes.length > 0 && now - lastScanTime > scanDelay) {
+        const value = codes[0].rawValue.trim();
+        if (value) {
+          try { beep.currentTime = 0; beep.play(); } catch(e) { /* autoplay kan geblokkeerd zijn */ }
+          targetInput.value = value;
+          onCode(value);
+          lastScanTime = now;
+        }
       }
-    };
+    } catch (err) {
+      console.error(err);
+    }
+    scanRAF = requestAnimationFrame(loop);
+  };
+  loop();
+}
 
-    document.getElementById("logoutButton").onclick = () => {
-      document.getElementById("studentView").classList.add("hidden");
-      document.getElementById("landingView").classList.remove("hidden");
-    };
+function stopScanner() {
+  if (scanRAF) cancelAnimationFrame(scanRAF);
+  scanRAF = null;
+  if (scanVideo) { try { scanVideo.pause(); } catch(_){} scanVideo.remove(); scanVideo = null; }
+  if (scanStream) { scanStream.getTracks().forEach(t => t.stop()); scanStream = null; }
+  if (scanStatus) scanStatus.classList.add("hidden");
+}
 
-    document.getElementById("logoutButtonTeacher").onclick = () => {
-      document.getElementById("teacherView").classList.add("hidden");
-      document.getElementById("landingView").classList.remove("hidden");
-    };
-  </script>
+// Docentenpaneel: schuifbalkje voor scansnelheid
+const scanDelayRange = document.getElementById("scanDelayRange");
+const scanDelayLabel = document.getElementById("scanDelayLabel");
+if (scanDelayRange && scanDelayLabel) {
+  scanDelayRange.addEventListener("input", e => {
+    const secs = parseFloat(e.target.value || "1.5");
+    scanDelay = Math.max(0.1, secs) * 1000;
+    scanDelayLabel.textContent = secs.toString();
+  });
+}
+
+// ==========================================================
+// 4️⃣ Login & logout
+// ==========================================================
+const initialStartButton = document.getElementById("initialStartButton");
+const initialBarcodeInput = document.getElementById("initialBarcodeInput");
+const initialStatusMessage = document.getElementById("initialStatusMessage");
+
+initialStartButton.onclick = async () => {
+  const barcode = initialBarcodeInput.value.trim();
+  if (!barcode) return;
+
+  const studentDoc = await getDoc(doc(studentsRef, barcode));
+  const teacherDoc = await getDoc(doc(teachersRef, barcode));
+
+  if (teacherDoc.exists()) {
+    // Toon docentenpaneel
+    landingView.classList.add("hidden");
+    teacherView.classList.remove("hidden");
+  } else if (studentDoc.exists()) {
+    // Toon studentenpaneel en start scanner
+    landingView.classList.add("hidden");
+    studentView.classList.remove("hidden");
+    document.getElementById("userIdDisplay").textContent = studentDoc.data().name;
+
+    // Laad bestaande leningen van deze leerling
+    await loadLoansForStudent(barcode);
+
+    const input = document.getElementById("barcodeInput");
+    const confirmBtn = document.getElementById("confirmItemButton");
+
+    // Start scanner automatisch
+    startScanner(input, code => handleItemLoan(barcode, code));
+
+    // Handmatige confirm en Enter-toets
+    input.addEventListener("keydown", e => {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        handleItemLoan(barcode, input.value.trim());
+      }
+    });
+    confirmBtn.addEventListener("click", () => handleItemLoan(barcode, input.value.trim()));
+  } else {
+    showMessage("Barcode niet gevonden.", "bg-red-500", initialStatusMessage);
+  }
+};
+
+// Uitloggen studentenpaneel
+document.getElementById("logoutButton").onclick = () => {
+  stopScanner();
+  studentView.classList.add("hidden");
+  landingView.classList.remove("hidden");
+};
+
+// Uitloggen docentenpaneel
+document.getElementById("logoutButtonTeacher").onclick = () => {
+  teacherView.classList.add("hidden");
+  landingView.classList.remove("hidden");
+};
+
+// ==========================================================
+// 5️⃣ Studentenpaneel: uitleen/terugbreng + lijst
+// ==========================================================
+const statusMessage = document.getElementById("statusMessage");
+
+async function loadLoansForStudent(studentBarcode) {
+  const snaps = await getDocs(loansRef);
+  const body = document.getElementById("loanTableBody");
+  body.innerHTML = "";
+  let has = false;
+  snaps.forEach(d => {
+    const data = d.data();
+    if (data.studentBarcode === studentBarcode) {
+      has = true;
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td class='px-4 py-2'>${data.itemName || ''}</td>
+        <td class='px-4 py-2'>${data.studentName || ''}</td>
+        <td class='px-4 py-2'>${data.date || '-'}</td>
+        <td class='px-4 py-2'>${data.returnDate || '-'}</td>
+        <td class='px-4 py-2'>${data.itemBarcode || ''}</td>
+        <td class='px-4 py-2'>${data.status || ''}</td>`;
+      body.appendChild(tr);
+    }
+  });
+  document.getElementById("noLoansMessage").classList.toggle("hidden", has);
+}
+
+async function handleItemLoan(studentBarcode, itemBarcode) {
+  if (!itemBarcode) return;
+  const studentDoc = await getDoc(doc(studentsRef, studentBarcode));
+  const itemDoc = await getDoc(doc(itemsRef, itemBarcode));
+  if (!itemDoc.exists()) {
+    showMessage("Item niet gevonden.", "bg-red-500", statusMessage);
+    return;
+  }
+
+  const studentName = (studentDoc.data() && studentDoc.data().name) || "";
+  const itemName = (itemDoc.data() && itemDoc.data().name) || "";
+  const today = formatDateBE(new Date());
+
+  // Check of er al een actieve lening is voor dit item bij deze leerling
+  const allLoans = await getDocs(loansRef);
+  let active = null;
+  allLoans.forEach(d => {
+    const L = d.data();
+    if (L.studentBarcode === studentBarcode && L.itemBarcode === itemBarcode && L.status === "uitgeleend") {
+      active = { id: d.id, ...L };
+    }
+  });
+
+  if (active) {
+    // Zet op ingeleverd
+    await setDoc(doc(loansRef, active.id), { ...active, status: "ingeleverd", returnDate: today });
+    showMessage(`"${itemName}" teruggebracht.`, "bg-yellow-500", statusMessage);
+  } else {
+    // Maak nieuwe uitleen
+    await addDoc(loansRef, {
+      studentBarcode,
+      studentName,
+      itemBarcode,
+      itemName,
+      date: today,
+      returnDate: null,
+      status: "uitgeleend"
+    });
+    showMessage(`"${itemName}" uitgeleend!`, "bg-green-500", statusMessage);
+  }
+
+  // Input leegmaken en lijst herladen
+  const input = document.getElementById("barcodeInput");
+  input.value = "";
+  await loadLoansForStudent(studentBarcode);
+}
+
+// ==========================================================
+// 6️⃣ Docentenpaneel: beheer + overzichten + leegmaken
+// ==========================================================
+const listOutput = document.getElementById("listOutput");
+
+// Items
+document.getElementById("addItemButton").onclick = async () => {
+  const b = document.getElementById("newItemBarcodeInput").value.trim();
+  const n = document.getElementById("newItemNameInput").value.trim();
+  if (!b || !n) return alert("Vul barcode en naam in.");
+  await setDoc(doc(itemsRef, b), { name: n });
+  alert("Item toegevoegd.");
+};
+
+document.getElementById("updateItemButton").onclick = async () => {
+  const b = document.getElementById("editItemBarcode").value.trim();
+  const n = document.getElementById("editItemName").value.trim();
+  if (!b || !n) return alert("Vul barcode en naam in.");
+  await setDoc(doc(itemsRef, b), { name: n }, { merge: true });
+  alert("Item aangepast.");
+};
+
+document.getElementById("deleteItemButton").onclick = async () => {
+  const b = document.getElementById("deleteItemBarcode").value.trim();
+  if (!b) return alert("Vul barcode in.");
+  await deleteDoc(doc(itemsRef, b));
+  alert("Item verwijderd.");
+};
+
+// Leerlingen
+document.getElementById("addStudentButton").onclick = async () => {
+  const b = document.getElementById("newStudentBarcodeInput").value.trim();
+  const n = document.getElementById("newStudentNameInput").value.trim();
+  if (!b || !n) return alert("Vul barcode en naam in.");
+  await setDoc(doc(studentsRef, b), { name: n });
+  alert("Leerling toegevoegd.");
+};
+
+document.getElementById("updateStudentButton").onclick = async () => {
+  const b = document.getElementById("editStudentBarcode").value.trim();
+  const n = document.getElementById("editStudentName").value.trim();
+  if (!b || !n) return alert("Vul barcode en naam in.");
+  await setDoc(doc(studentsRef, b), { name: n }, { merge: true });
+  alert("Leerling aangepast.");
+};
+
+document.getElementById("deleteStudentButton").onclick = async () => {
+  const b = document.getElementById("deleteStudentBarcode").value.trim();
+  if (!b) return alert("Vul barcode in.");
+  await deleteDoc(doc(studentsRef, b));
+  alert("Leerling verwijderd.");
+};
+
+// Leerkrachten
+document.getElementById("addTeacherButton").onclick = async () => {
+  const b = document.getElementById("newTeacherBarcodeInput").value.trim();
+  const n = document.getElementById("newTeacherNameInput").value.trim();
+  if (!b || !n) return alert("Vul barcode en naam in.");
+  await setDoc(doc(teachersRef, b), { name: n });
+  alert("Leerkracht toegevoegd.");
+};
+
+document.getElementById("updateTeacherButton").onclick = async () => {
+  const b = document.getElementById("editTeacherBarcode").value.trim();
+  const n = document.getElementById("editTeacherName").value.trim();
+  if (!b || !n) return alert("Vul barcode en naam in.");
+  await setDoc(doc(teachersRef, b), { name: n }, { merge: true });
+  alert("Leerkracht aangepast.");
+};
+
+document.getElementById("deleteTeacherButton").onclick = async () => {
+  const b = document.getElementById("deleteTeacherBarcode").value.trim();
+  if (!b) return alert("Vul barcode in.");
+  await deleteDoc(doc(teachersRef, b));
+  alert("Leerkracht verwijderd.");
+};
+
+// Overzichten tonen
+const listStudentsButton = document.getElementById("listStudentsButton");
+const listItemsButton = document.getElementById("listItemsButton");
+const listTeachersButton = document.getElementById("listTeachersButton");
+const listActiveLoansButton = document.getElementById("listActiveLoansButton");
+
+listStudentsButton.onclick = async () => renderList((await getDocs(studentsRef)).docs, listOutput);
+listItemsButton.onclick = async () => renderList((await getDocs(itemsRef)).docs, listOutput);
+listTeachersButton.onclick = async () => renderList((await getDocs(teachersRef)).docs, listOutput);
+
+listActiveLoansButton.onclick = async () => {
+  const snaps = await getDocs(loansRef);
+  let html = "<table class='w-full border'><thead><tr><th class='text-left p-2'>Leerling</th><th class='text-left p-2'>Item</th><th class='text-left p-2'>Uitleendatum</th></tr></thead><tbody>";
+  snaps.forEach(d => {
+    const L = d.data();
+    if (L.status === "uitgeleend") {
+      html += `<tr class='border-t'><td class='p-2'>${L.studentName || ''}</td><td class='p-2'>${L.itemName || ''}</td><td class='p-2'>${L.date || ''}</td></tr>`;
+    }
+  });
+  html += "</tbody></table>";
+  listOutput.innerHTML = html;
+  return html;
+};
+
+// Afdrukken
+const printStudentsButton = document.getElementById("printStudentsButton");
+const printItemsButton = document.getElementById("printItemsButton");
+const printTeachersButton = document.getElementById("printTeachersButton");
+const printActiveLoansButton = document.getElementById("printActiveLoansButton");
+
+printStudentsButton.onclick = async () => { const html = renderList((await getDocs(studentsRef)).docs, document.createElement('div')); printSection(html); };
+printItemsButton.onclick = async () => { const html = renderList((await getDocs(itemsRef)).docs, document.createElement('div')); printSection(html); };
+printTeachersButton.onclick = async () => { const html = renderList((await getDocs(teachersRef)).docs, document.createElement('div')); printSection(html); };
+printActiveLoansButton.onclick = async () => {
+  const snaps = await getDocs(loansRef);
+  let html = "<table class='w-full border'><thead><tr><th class='text-left p-2'>Leerling</th><th class='text-left p-2'>Item</th><th class='text-left p-2'>Uitleendatum</th></tr></thead><tbody>";
+  snaps.forEach(d => { const L = d.data(); if (L.status === "uitgeleend") html += `<tr class='border-t'><td class='p-2'>${L.studentName||''}</td><td class='p-2'>${L.itemName||''}</td><td class='p-2'>${L.date||''}</td></tr>`; });
+  html += "</tbody></table>";
+  printSection(html);
+};
+
+// Uitleenlijst leerling leegmaken (enkel ingeleverde verwijderen)
+const clearLoansButton = document.getElementById("clearLoansButton");
+clearLoansButton.onclick = async () => {
+  const barcode = document.getElementById("clearLoansBarcode").value.trim();
+  if (!barcode) return alert("Vul een leerlingbarcode in.");
+  const proceed = confirm(`Weet je zeker dat je de uitleenlijst van leerling ${barcode} wil leegmaken? Enkel 'ingeleverd' wordt verwijderd.`);
+  if (!proceed) return;
+
+  const snaps = await getDocs(loansRef);
+  let removed = 0;
+  for (const d of snaps.docs) {
+    const L = d.data();
+    if (L.studentBarcode === barcode && L.status !== "uitgeleend") {
+      await deleteDoc(doc(loansRef, d.id));
+      removed++;
+    }
+  }
+  alert(`Leegmaken voltooid: ${removed} record(s) verwijderd.`);
+};
+
+</script>
+<!-- 🔚 EINDE SCRIPTSECTIE -->
+
 </body>
 </html>
