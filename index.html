@@ -59,13 +59,11 @@
         <button id="logoutButtonTeacher" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg">Uitloggen</button>
       </div>
 
-      <!-- Scansnelheid -->
       <div class="mb-6">
         <label for="scanDelayRange" class="block text-gray-700 font-medium mb-2">Scansnelheid (pauze tussen scans): <span id="scanDelayLabel">1.5</span> sec</label>
         <input id="scanDelayRange" type="range" min="0.5" max="5" step="0.5" value="1.5" class="w-full">
       </div>
 
-      <!-- Items beheren -->
       <h3 class="text-xl font-semibold mb-2">Items beheren</h3>
       <div class="flex gap-2 mb-2">
         <input id="newItemBarcodeInput" class="flex-1 border px-2 py-1 rounded" placeholder="Barcode nieuw item..." />
@@ -82,7 +80,6 @@
         <button id="deleteItemButton" class="bg-red-600 text-white px-3 py-1 rounded">Verwijderen</button>
       </div>
 
-      <!-- Leerlingen beheren -->
       <h3 class="text-xl font-semibold mb-2">Leerlingen beheren</h3>
       <div class="flex gap-2 mb-2">
         <input id="newStudentBarcodeInput" class="flex-1 border px-2 py-1 rounded" placeholder="Barcode nieuwe leerling..." />
@@ -103,7 +100,6 @@
         <button id="clearLoansButton" class="bg-purple-600 text-white px-3 py-1 rounded">Leeg uitleenlijst (bewaar uitgeleend)</button>
       </div>
 
-      <!-- Leerkrachten beheren -->
       <h3 class="text-xl font-semibold mb-2">Leerkrachten beheren</h3>
       <div class="flex gap-2 mb-2">
         <input id="newTeacherBarcodeInput" class="flex-1 border px-2 py-1 rounded" placeholder="Barcode nieuwe leerkracht..." />
@@ -120,7 +116,6 @@
         <button id="deleteTeacherButton" class="bg-red-600 text-white px-3 py-1 rounded">Verwijderen</button>
       </div>
 
-      <!-- Overzichten -->
       <h3 class="text-xl font-semibold mb-2">Overzichten en afdrukken</h3>
       <div class="flex flex-wrap gap-2 mb-2">
         <button id="listStudentsButton" class="bg-gray-600 text-white px-3 py-1 rounded">Toon leerlingen</button>
@@ -163,33 +158,37 @@
     const teachersRef = collection(db, "teachers");
     const loansRef = collection(db, "loans");
 
-    let scanDelay = 1500;
+    // ✅ LOGIN FIX
+    document.getElementById("initialStartButton").onclick = async () => {
+      const barcode = document.getElementById("initialBarcodeInput").value.trim();
+      if (!barcode) return;
+      const studentDoc = await getDoc(doc(studentsRef, barcode));
+      const teacherDoc = await getDoc(doc(teachersRef, barcode));
 
-    document.getElementById("scanDelayRange").addEventListener("input", e => {
-      scanDelay = e.target.value * 1000;
-      document.getElementById("scanDelayLabel").textContent = e.target.value;
-    });
-
-    async function clearLoansForStudent(barcode) {
-      const confirmClear = confirm(`Weet je zeker dat je de uitleenlijst van leerling ${barcode} wil leegmaken? Alleen uitgeleende items blijven behouden.`);
-      if (!confirmClear) return;
-
-      const qSnap = await getDocs(loansRef);
-      let removed = 0;
-      for (const d of qSnap.docs) {
-        const data = d.data();
-        if (data.studentBarcode === barcode && data.status !== "uitgeleend") {
-          await deleteDoc(doc(loansRef, d.id));
-          removed++;
-        }
+      if (teacherDoc.exists()) {
+        document.getElementById("landingView").classList.add("hidden");
+        document.getElementById("teacherView").classList.remove("hidden");
+      } else if (studentDoc.exists()) {
+        document.getElementById("landingView").classList.add("hidden");
+        document.getElementById("studentView").classList.remove("hidden");
+        document.getElementById("userIdDisplay").textContent = studentDoc.data().name;
+      } else {
+        const msg = document.getElementById("initialStatusMessage");
+        msg.textContent = "Barcode niet gevonden.";
+        msg.className = "mt-4 p-3 rounded-lg text-white text-center bg-red-500";
+        msg.classList.remove("hidden");
+        setTimeout(() => msg.classList.add("hidden"), 4000);
       }
-      alert(`Leegmaken voltooid: ${removed} oude leningen verwijderd.`);
-    }
+    };
 
-    document.getElementById("clearLoansButton").onclick = async () => {
-      const barcode = document.getElementById("clearLoansBarcode").value.trim();
-      if (!barcode) return alert("Vul een leerlingbarcode in.");
-      await clearLoansForStudent(barcode);
+    document.getElementById("logoutButton").onclick = () => {
+      document.getElementById("studentView").classList.add("hidden");
+      document.getElementById("landingView").classList.remove("hidden");
+    };
+
+    document.getElementById("logoutButtonTeacher").onclick = () => {
+      document.getElementById("teacherView").classList.add("hidden");
+      document.getElementById("landingView").classList.remove("hidden");
     };
   </script>
 </body>
