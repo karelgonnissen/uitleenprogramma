@@ -409,8 +409,83 @@ document.getElementById("initialStartButton").addEventListener("click", setupCam
 document.getElementById("logoutButton").addEventListener("click", setupCameraForCurrentView);
 document.getElementById("logoutButtonTeacher").addEventListener("click", setupCameraForCurrentView);
 
+ // =======================================
+//  ITEM UITLEEN / INLEVER LOGICA
+// =======================================
+
+import { addDoc, query, getDocs, where } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+const loansRef = collection(db, "loans");
+
+// 📦 Item uitleen of terugbrengen
+async function handleItemTransaction(itemBarcode) {
+  const statusMessage = document.getElementById("statusMessage");
+  const loanTableBody = document.getElementById("loanTableBody");
+  const noLoansMessage = document.getElementById("noLoansMessage");
+
+  const loggedInStudent = JSON.parse(localStorage.getItem("loggedInStudent"));
+  if (!loggedInStudent) {
+    showMessage("Scan eerst een leerlingbarcode om in te loggen.", "bg-red-500", statusMessage);
+    return;
+  }
+
+  try {
+    const studentId = loggedInStudent.barcode;
+    const studentName = loggedInStudent.name;
+
+    // Controleer of het item bestaat
+    const itemDocRef = doc(itemsRef, itemBarcode);
+    const itemDoc = await getDoc(itemDocRef);
+
+    if (!itemDoc.exists()) {
+      showMessage("Item niet gevonden. Vraag een leerkracht om het toe te voegen.", "bg-red-500", statusMessage);
+      return;
+    }
+
+    const itemName = itemDoc.data().name;
+
+    // Controleer of het item al is uitgeleend
+    const loansSnapshot = await getDocs(loansRef);
+    const existingLoan = loansSnapshot.docs.find(doc => doc.data().item_barcode === itemBarcode);
+
+    if (existingLoan) {
+      const loanData = existingLoan.data();
+      if (loanData.student_barcode === studentId) {
+        await deleteDoc(doc(loansRef, existingLoan.id));
+        showMessage(`Item '${itemName}' werd succesvol teruggebracht.`, "bg-green-500", statusMessage);
+      } else {
+        showMessage(`Item '${itemName}' is momenteel uitgeleend aan ${loanData.student_name}.`, "bg-yellow-500", statusMessage);
+      }
+    } else {
+      await addDoc(loansRef, {
+        student_barcode: studentId,
+        student_name: studentName,
+        item_barcode: itemBarcode,
+        item_name: itemName,
+        loan_date: new Date().toISOString()
+      });
+      showMessage(`Item '${itemName}' is succesvol uitgeleend aan ${studentName}.`, "bg-green-500", statusMessage);
+    }
+  } catch (err) {
+    console.error(err);
+    showMessage("Er trad een fout op bij het verwerken van het item.", "bg-red-500", statusMessage);
+  }
+}
+
+// ✅ Luister naar ENTER in het itemveld
+document.getElementById("barcodeInput").addEventListener("keydown", e => {
+  if (e.key === "Enter") {
+    e.preventDefault();
+    const barcode = e.target.value.trim();
+    if (barcode) {
+      handleItemTransaction(barcode);
+      e.target.value = ""; // veld leegmaken
+    }
+  }
+});
+     
       
   </script>
 </body>
 </html>
+
 
