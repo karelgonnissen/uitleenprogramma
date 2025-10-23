@@ -8,8 +8,6 @@
 </head>
 <body class="bg-gray-100 min-h-screen flex items-center justify-center">
   <div class="bg-white shadow-xl rounded-2xl w-full max-w-6xl p-8">
-
-    <!-- Landing View -->
     <div id="landingView">
       <h1 class="text-4xl font-extrabold text-blue-600 text-center mb-4">📚 Uitleenprogramma</h1>
       <p class="text-center text-gray-600 mb-6">Scan je barcode om te beginnen.</p>
@@ -20,7 +18,6 @@
       <div id="initialStatusMessage" class="hidden mt-4 p-3 rounded-lg text-white text-center"></div>
     </div>
 
-    <!-- Student View -->
     <div id="studentView" class="hidden">
       <div class="flex justify-between items-center mb-6">
         <h2 class="text-2xl font-bold text-blue-600">Studentenpaneel</h2>
@@ -38,45 +35,36 @@
             <tr>
               <th class="px-4 py-2">Artikel</th>
               <th class="px-4 py-2">Leerling</th>
-              <th class="px-4 py-2">Datum</th>
+              <th class="px-4 py-2">Uitleendatum</th>
+              <th class="px-4 py-2">Terugbrengdatum</th>
               <th class="px-4 py-2">Barcode</th>
+              <th class="px-4 py-2">Status</th>
             </tr>
           </thead>
           <tbody id="loanTableBody" class="divide-y divide-gray-200"></tbody>
         </table>
       </div>
       <div id="noLoansMessage" class="hidden text-gray-500 mt-2 text-center">Geen items uitgeleend.</div>
-      <button id="printButton" class="mt-4 bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg">Afdrukken</button>
     </div>
 
-    <!-- Teacher View -->
     <div id="teacherView" class="hidden">
-      <div class="flex justify-between items-center mb-6">
-        <h2 class="text-2xl font-bold text-green-600">Docentenpaneel</h2>
-        <button id="logoutButtonTeacher" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg">Uitloggen</button>
+      <h2 class="text-2xl font-bold text-green-600 mb-4">Docentenpaneel</h2>
+      <button id="logoutButtonTeacher" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg mb-4">Uitloggen</button>
+      <h3 class="text-xl font-semibold mb-2">Items beheren</h3>
+      <div class="flex gap-2 mb-2">
+        <input id="newItemBarcodeInput" class="flex-1 border px-2 py-1 rounded" placeholder="Barcode nieuw item..." />
+        <input id="newItemNameInput" class="flex-1 border px-2 py-1 rounded" placeholder="Naam nieuw item..." />
+        <button id="addItemButton" class="bg-blue-600 text-white px-3 py-1 rounded">Toevoegen</button>
       </div>
-      <p class="text-gray-600 mb-4">Beheer items, leerlingen en leerkrachten.</p>
-
-      <!-- Items beheren -->
-      <div class="mb-8">
-        <h3 class="text-xl font-semibold mb-2">Items beheren</h3>
-        <div class="flex gap-2 mb-2">
-          <input id="newItemBarcodeInput" class="flex-1 border px-2 py-1 rounded" placeholder="Barcode nieuw item..." />
-          <input id="newItemNameInput" class="flex-1 border px-2 py-1 rounded" placeholder="Naam nieuw item..." />
-          <button id="addItemButton" class="bg-blue-600 text-white px-3 py-1 rounded">Toevoegen</button>
-        </div>
-      </div>
+      <div id="addItemStatusMessage" class="hidden p-2 text-white rounded"></div>
     </div>
   </div>
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
     import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-    import {
-      getFirestore, doc, getDoc, setDoc, collection, getDocs, deleteDoc, addDoc
-    } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+    import { getFirestore, doc, getDoc, setDoc, collection, getDocs, addDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
-    // Firebase-config
     const firebaseConfig = {
       apiKey: "AIzaSyBPJmJ736FjH8Uu0YmzyjiB5QVEsmjIftw",
       authDomain: "uitleenprogramma.firebaseapp.com",
@@ -90,148 +78,137 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
     const auth = getAuth(app);
-    await signInAnonymously(auth);
+    signInAnonymously(auth);
 
-    // Collecties
     const studentsRef = collection(db, "students");
     const itemsRef = collection(db, "items");
-    const loansRef = collection(db, "loans");
     const teachersRef = collection(db, "teachers");
+    const loansRef = collection(db, "loans");
 
-    // Helpers
     function showMessage(msg, cls, target) {
       target.textContent = msg;
-      target.className = "p-3 mt-2 rounded text-center text-white " + cls;
+      target.className = "mt-2 p-2 rounded text-white text-center " + cls;
       target.classList.remove("hidden");
       setTimeout(() => target.classList.add("hidden"), 4000);
     }
 
-    function showScreen(view) {
-      ["landingView", "studentView", "teacherView"].forEach(v => document.getElementById(v).classList.add("hidden"));
-      document.getElementById(view + "View").classList.remove("hidden");
+    async function loadLoansForStudent(barcode) {
+      const qSnap = await getDocs(loansRef);
+      const body = document.getElementById("loanTableBody");
+      body.innerHTML = "";
+      let hasLoans = false;
+      qSnap.forEach(d => {
+        const data = d.data();
+        if (data.studentBarcode === barcode) {
+          hasLoans = true;
+          const row = document.createElement("tr");
+          row.innerHTML = `
+            <td class='px-4 py-2'>${data.itemName}</td>
+            <td class='px-4 py-2'>${data.studentName}</td>
+            <td class='px-4 py-2'>${data.date || "-"}</td>
+            <td class='px-4 py-2'>${data.returnDate || "-"}</td>
+            <td class='px-4 py-2'>${data.itemBarcode}</td>
+            <td class='px-4 py-2'>${data.status}</td>`;
+          body.appendChild(row);
+        }
+      });
+      document.getElementById("noLoansMessage").classList.toggle("hidden", hasLoans);
     }
 
-    // Login via barcode
-    async function handleInitialScan(barcode) {
-      const teacherDoc = await getDoc(doc(teachersRef, barcode));
+    async function handleItemLoan(studentBarcode, itemBarcode) {
+      if (!itemBarcode) return;
+      const studentDoc = await getDoc(doc(studentsRef, studentBarcode));
+      const itemDoc = await getDoc(doc(itemsRef, itemBarcode));
+      const statusBox = document.getElementById("statusMessage");
+      if (!itemDoc.exists()) {
+        showMessage("Item niet gevonden.", "bg-red-500", statusBox);
+        return;
+      }
+      const studentName = studentDoc.data().name;
+      const itemName = itemDoc.data().name;
+      const date = new Date().toLocaleDateString("nl-BE");
+      const allLoans = await getDocs(loansRef);
+      let activeLoan = null;
+      allLoans.forEach(d => {
+        const data = d.data();
+        if (data.studentBarcode === studentBarcode && data.itemBarcode === itemBarcode && data.status === "uitgeleend") {
+          activeLoan = { id: d.id, ...data };
+        }
+      });
+      if (activeLoan) {
+        await setDoc(doc(loansRef, activeLoan.id), { ...activeLoan, status: "ingeleverd", returnDate: date });
+        showMessage(`"${itemName}" teruggebracht.`, "bg-yellow-500", statusBox);
+      } else {
+        await addDoc(loansRef, { studentBarcode, studentName, itemBarcode, itemName, date, returnDate: null, status: "uitgeleend" });
+        showMessage(`"${itemName}" uitgeleend!`, "bg-green-500", statusBox);
+      }
+      document.getElementById("barcodeInput").value = "";
+      await loadLoansForStudent(studentBarcode);
+    }
+
+    async function startScanner(targetInput, callback) {
+      if (!("BarcodeDetector" in window)) return;
+      const detector = new BarcodeDetector({ formats: ["code_128", "ean_13", "qr_code"] });
+      const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
+      const video = document.createElement("video");
+      video.srcObject = stream;
+      video.style.display = "none";
+      document.body.appendChild(video);
+      await video.play();
+      const scanLoop = async () => {
+        const codes = await detector.detect(video);
+        if (codes.length > 0) {
+          const code = codes[0].rawValue.trim();
+          targetInput.value = code;
+          callback(code);
+          stream.getTracks().forEach(t => t.stop());
+          video.remove();
+          return;
+        }
+        requestAnimationFrame(scanLoop);
+      };
+      scanLoop();
+    }
+
+    document.getElementById("initialStartButton").onclick = async () => {
+      const barcode = document.getElementById("initialBarcodeInput").value.trim();
       const studentDoc = await getDoc(doc(studentsRef, barcode));
+      const teacherDoc = await getDoc(doc(teachersRef, barcode));
       if (teacherDoc.exists()) {
-        showScreen("teacher");
-        showMessage("Welkom, " + teacherDoc.data().name, "bg-green-600", document.getElementById("initialStatusMessage"));
+        document.getElementById("landingView").classList.add("hidden");
+        document.getElementById("teacherView").classList.remove("hidden");
       } else if (studentDoc.exists()) {
-        localStorage.setItem("loggedInStudent", JSON.stringify({ barcode, name: studentDoc.data().name }));
+        document.getElementById("landingView").classList.add("hidden");
+        document.getElementById("studentView").classList.remove("hidden");
         document.getElementById("userIdDisplay").textContent = studentDoc.data().name;
-        showScreen("student");
-        showMessage("Welkom, " + studentDoc.data().name, "bg-green-600", document.getElementById("statusMessage"));
+        loadLoansForStudent(barcode);
+        const input = document.getElementById("barcodeInput");
+        input.focus();
+        startScanner(input, code => handleItemLoan(barcode, code));
+        input.addEventListener("keypress", e => {
+          if (e.key === "Enter") handleItemLoan(barcode, input.value.trim());
+        });
       } else {
         showMessage("Barcode niet gevonden.", "bg-red-500", document.getElementById("initialStatusMessage"));
       }
-    }
+    };
 
-    document.getElementById("initialStartButton").addEventListener("click", () => {
-      const bc = document.getElementById("initialBarcodeInput").value.trim();
-      if (bc) handleInitialScan(bc);
+    document.getElementById("initialBarcodeInput").addEventListener("focus", () => {
+      const input = document.getElementById("initialBarcodeInput");
+      startScanner(input, code => {
+        input.value = code;
+        document.getElementById("initialStartButton").click();
+      });
     });
 
-    document.getElementById("initialBarcodeInput").addEventListener("keydown", e => {
-      if (e.key === "Enter") handleInitialScan(e.target.value.trim());
-    });
-
-    // Uitloggen
-    document.getElementById("logoutButton").addEventListener("click", () => {
-      localStorage.removeItem("loggedInStudent");
-      showScreen("landing");
-    });
-    document.getElementById("logoutButtonTeacher").addEventListener("click", () => showScreen("landing"));
-
-    // ITEM UITLEEN / INLEVEREN
-    async function handleItemTransaction(itemBarcode) {
-      const statusMessage = document.getElementById("statusMessage");
-      const loggedInStudent = JSON.parse(localStorage.getItem("loggedInStudent"));
-      if (!loggedInStudent) {
-        showMessage("Scan eerst een leerlingbarcode.", "bg-yellow-500", statusMessage);
-        return;
-      }
-
-      const itemDocRef = doc(itemsRef, itemBarcode);
-      const itemDoc = await getDoc(itemDocRef);
-      if (!itemDoc.exists()) {
-        showMessage("Item niet gevonden.", "bg-red-500", statusMessage);
-        return;
-      }
-
-      const itemName = itemDoc.data().name;
-      const loansSnap = await getDocs(loansRef);
-      const existingLoan = loansSnap.docs.find(d => d.data().item_barcode === itemBarcode);
-
-      if (existingLoan) {
-        const loan = existingLoan.data();
-        if (loan.student_barcode === loggedInStudent.barcode) {
-          await deleteDoc(doc(loansRef, existingLoan.id));
-          showMessage(`Item '${itemName}' is teruggebracht.`, "bg-green-600", statusMessage);
-        } else {
-          showMessage(`Item is al uitgeleend aan ${loan.student_name}.`, "bg-orange-500", statusMessage);
-        }
-      } else {
-        await addDoc(loansRef, {
-          student_barcode: loggedInStudent.barcode,
-          student_name: loggedInStudent.name,
-          item_barcode: itemBarcode,
-          item_name: itemName,
-          loan_date: new Date().toISOString()
-        });
-        showMessage(`Item '${itemName}' is uitgeleend aan ${loggedInStudent.name}.`, "bg-green-600", statusMessage);
-      }
-    }
-
-    // ENTER → uitleen uitvoeren
-    document.getElementById("barcodeInput").addEventListener("keydown", e => {
-      if (e.key === "Enter") {
-        e.preventDefault();
-        const bc = e.target.value.trim();
-        if (bc) {
-          handleItemTransaction(bc);
-          e.target.value = "";
-        }
-      }
-    });
-
-    // CAMERA SCANNER
-    async function startCameraScanner(targetInputId) {
-      try {
-        if (!("BarcodeDetector" in window)) return;
-        const formats = ["qr_code", "ean_13", "code_128", "code_39"];
-        const detector = new BarcodeDetector({ formats });
-        const video = document.createElement("video");
-        video.style.display = "none";
-        document.body.appendChild(video);
-        const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
-        video.srcObject = stream;
-        await video.play();
-        async function scan() {
-          const codes = await detector.detect(video);
-          if (codes.length > 0) {
-            const code = codes[0].rawValue.trim();
-            const input = document.getElementById(targetInputId);
-            input.value = code;
-            input.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter" }));
-          }
-          requestAnimationFrame(scan);
-        }
-        scan();
-      } catch (err) {
-        console.error("Camera niet beschikbaar:", err);
-      }
-    }
-
-    function setupCamera() {
-      const landing = !document.getElementById("landingView").classList.contains("hidden");
-      const student = !document.getElementById("studentView").classList.contains("hidden");
-      if (landing) startCameraScanner("initialBarcodeInput");
-      else if (student) startCameraScanner("barcodeInput");
-    }
-
-    document.addEventListener("DOMContentLoaded", setupCamera);
+    document.getElementById("logoutButton").onclick = () => {
+      document.getElementById("studentView").classList.add("hidden");
+      document.getElementById("landingView").classList.remove("hidden");
+    };
+    document.getElementById("logoutButtonTeacher").onclick = () => {
+      document.getElementById("teacherView").classList.add("hidden");
+      document.getElementById("landingView").classList.remove("hidden");
+    };
   </script>
 </body>
 </html>
