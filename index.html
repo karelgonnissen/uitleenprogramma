@@ -141,7 +141,7 @@
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
     import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-    import { getFirestore, doc, getDoc, setDoc, collection, getDocs, deleteDoc, addDoc, query, where } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+    import { getFirestore, doc, getDoc, setDoc, collection, getDocs, deleteDoc, addDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyBPJmJ736FjH8Uu0YmzyjiB5QVEsmjIftw",
@@ -170,28 +170,10 @@
       document.getElementById("scanDelayLabel").textContent = e.target.value;
     });
 
-    function showMessage(msg, cls, target) {
-      target.textContent = msg;
-      target.className = "mt-2 p-2 rounded text-white text-center " + cls;
-      target.classList.remove("hidden");
-      setTimeout(() => target.classList.add("hidden"), 4000);
-    }
-
-    async function loadActiveLoans() {
-      const qSnap = await getDocs(loansRef);
-      let html = "<table class='w-full border'><tr><th>Leerling</th><th>Item</th><th>Uitleendatum</th></tr>";
-      qSnap.forEach(d => {
-        const data = d.data();
-        if (data.status === "uitgeleend") {
-          html += `<tr><td>${data.studentName}</td><td>${data.itemName}</td><td>${data.date}</td></tr>`;
-        }
-      });
-      html += "</table>";
-      document.getElementById("listOutput").innerHTML = html;
-      return html;
-    }
-
     async function clearLoansForStudent(barcode) {
+      const confirmClear = confirm(`Weet je zeker dat je de uitleenlijst van leerling ${barcode} wil leegmaken? Alleen uitgeleende items blijven behouden.`);
+      if (!confirmClear) return;
+
       const qSnap = await getDocs(loansRef);
       let removed = 0;
       for (const d of qSnap.docs) {
@@ -203,55 +185,6 @@
       }
       alert(`Leegmaken voltooid: ${removed} oude leningen verwijderd.`);
     }
-
-    async function startScanner(targetInput, callback) {
-      const scanStatus = document.getElementById("scanStatus");
-      if (!("BarcodeDetector" in window)) {
-        console.warn("BarcodeDetector niet ondersteund.");
-        return;
-      }
-      const detector = new BarcodeDetector({ formats: ["code_128", "ean_13", "qr_code"] });
-      const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
-      const video = document.createElement("video");
-      video.srcObject = stream;
-      video.setAttribute("playsinline", true);
-      video.style.display = "none";
-      document.body.appendChild(video);
-      await video.play();
-      scanStatus.classList.remove("hidden");
-
-      let lastScanTime = 0;
-
-      const scanLoop = async () => {
-        const now = Date.now();
-        try {
-          const codes = await detector.detect(video);
-          if (codes.length > 0 && now - lastScanTime > scanDelay) {
-            const code = codes[0].rawValue.trim();
-            if (code) {
-              targetInput.value = code;
-              callback(code);
-              lastScanTime = now;
-            }
-          }
-        } catch (err) {
-          console.error(err);
-        }
-        requestAnimationFrame(scanLoop);
-      };
-      scanLoop();
-    }
-
-    document.getElementById("listActiveLoansButton").onclick = loadActiveLoans;
-    document.getElementById("printActiveLoansButton").onclick = async () => {
-      const html = await loadActiveLoans();
-      const win = window.open('', '', 'height=700,width=900');
-      win.document.write('<html><head><title>Actieve uitleenlijst</title></head><body>');
-      win.document.write(html);
-      win.document.write('</body></html>');
-      win.document.close();
-      win.print();
-    };
 
     document.getElementById("clearLoansButton").onclick = async () => {
       const barcode = document.getElementById("clearLoansBarcode").value.trim();
