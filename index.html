@@ -463,8 +463,10 @@ async function loadLoansForStudent(studentBarcode) {
 
 async function handleItemLoan(studentBarcode, itemBarcode) {
   if (!itemBarcode) return;
+
   const studentDoc = await getDoc(doc(studentsRef, studentBarcode));
   const itemDoc = await getDoc(doc(itemsRef, itemBarcode));
+
   if (!itemDoc.exists()) {
     showMessage("Item niet gevonden.", "bg-red-500", statusMessage);
     return;
@@ -474,22 +476,42 @@ async function handleItemLoan(studentBarcode, itemBarcode) {
   const itemName = (itemDoc.data() && itemDoc.data().name) || "";
   const today = formatDateBE(new Date());
 
-  // Check of er al een actieve lening is voor dit item bij deze leerling
+  // 🔹 Haal alle leningen op
   const allLoans = await getDocs(loansRef);
-  let active = null;
+  let activeForThisStudent = null;
+  let activeForAnother = null;
+
   allLoans.forEach(d => {
     const L = d.data();
-    if (L.studentBarcode === studentBarcode && L.itemBarcode === itemBarcode && L.status === "uitgeleend") {
-      active = { id: d.id, ...L };
+    if (L.itemBarcode === itemBarcode && L.status === "uitgeleend") {
+      if (L.studentBarcode === studentBarcode) {
+        activeForThisStudent = { id: d.id, ...L };
+      } else {
+        activeForAnother = { id: d.id, ...L };
+      }
     }
   });
 
-  if (active) {
-    // Zet op ingeleverd
-    await setDoc(doc(loansRef, active.id), { ...active, status: "ingeleverd", returnDate: today });
+  // 🔹 Controle: item is al uitgeleend aan iemand anders
+  if (activeForAnother) {
+    showMessage(
+      `❌ "${itemName}" is momenteel al uitgeleend aan ${activeForAnother.studentName}.`,
+      "bg-red-500",
+      statusMessage
+    );
+    return;
+  }
+
+  // 🔹 Controle: leerling had het item zelf nog niet teruggebracht
+  if (activeForThisStudent) {
+    await setDoc(doc(loansRef, activeForThisStudent.id), {
+      ...activeForThisStudent,
+      status: "ingeleverd",
+      returnDate: today
+    });
     showMessage(`"${itemName}" teruggebracht.`, "bg-yellow-500", statusMessage);
   } else {
-    // Maak nieuwe uitleen
+    // 🔹 Nieuwe uitleen
     await addDoc(loansRef, {
       studentBarcode,
       studentName,
@@ -502,11 +524,12 @@ async function handleItemLoan(studentBarcode, itemBarcode) {
     showMessage(`"${itemName}" uitgeleend!`, "bg-green-500", statusMessage);
   }
 
-  // Input leegmaken en lijst herladen
+  // 🔹 Input leegmaken en lijst herladen
   const input = document.getElementById("barcodeInput");
   input.value = "";
   await loadLoansForStudent(studentBarcode);
 }
+
 
 // ==========================================================
 // 6️⃣ Docentenpaneel: beheer + overzichten + leegmaken
@@ -784,3 +807,4 @@ deleteSelectedBtn?.addEventListener("click", async () => {
 
 </body>
 </html>
+
