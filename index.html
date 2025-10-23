@@ -18,6 +18,7 @@
         <button id="initialStartButton" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg shadow">Start</button>
       </div>
       <div id="initialStatusMessage" class="hidden mt-4 p-3 rounded-lg text-white text-center"></div>
+      <div id="initialScanStatus" class="hidden text-center text-green-600 font-semibold mt-4">📸 Scanner actief...</div>
     </div>
 
     <!-- 🔹 Studentenpaneel -->
@@ -208,6 +209,8 @@ function printSection(html) {
 // ==========================================================
 // 3️⃣ Scannerlogica + geluid
 // ==========================================================
+// Variabelen voor de LOGIN-scanner
+let loginScan = { stream: null, video: null, raf: null };
 let scanDelay = 1500; // standaard 1,5s tussen scans (instelbaar in docentenpaneel)
 let scanRAF = null;   // requestAnimationFrame id
 let scanVideo = null; // onzichtbare video
@@ -266,6 +269,73 @@ function stopScanner() {
   if (scanStatus) scanStatus.classList.add("hidden");
 }
 
+// ---------- LOGIN-SCANNER (voor het aanmeldscherm) ----------
+async function startLoginScanner() {
+  const loginInput = document.getElementById("initialBarcodeInput");
+  const loginButton = document.getElementById("initialStartButton");
+  const loginStatus = document.getElementById("initialScanStatus");
+
+  if (!("BarcodeDetector" in window)) {
+    console.warn("BarcodeDetector niet ondersteund in deze browser.");
+    return;
+  }
+
+  // Status tonen
+  if (loginStatus) loginStatus.classList.remove("hidden");
+
+  // Camera starten
+  loginScan.stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
+  loginScan.video = document.createElement("video");
+  loginScan.video.srcObject = loginScan.stream;
+  loginScan.video.setAttribute("playsinline", true);
+  loginScan.video.style.display = "none";
+  document.body.appendChild(loginScan.video);
+  await loginScan.video.play();
+
+  const detector = new BarcodeDetector({ formats: ["code_128", "ean_13", "qr_code"] });
+  let last = 0;
+
+  const loop = async () => {
+    const now = Date.now();
+    try {
+      const codes = await detector.detect(loginScan.video);
+      if (codes.length > 0 && now - last > 1500) {
+        const code = codes[0].rawValue.trim();
+        if (code) {
+          try { beep.currentTime = 0; beep.play(); } catch {}
+          loginInput.value = code;
+          loginButton.click(); // automatisch aanmelden
+          last = now;
+        }
+      }
+    } catch (e) {
+      console.error(e);
+    }
+    loginScan.raf = requestAnimationFrame(loop);
+  };
+  loop();
+}
+
+function stopLoginScanner() {
+  // status verbergen
+  const loginStatus = document.getElementById("initialScanStatus");
+  if (loginStatus) loginStatus.classList.add("hidden");
+
+  if (loginScan.raf) cancelAnimationFrame(loginScan.raf);
+  loginScan.raf = null;
+
+  if (loginScan.video) {
+    try { loginScan.video.pause(); } catch {}
+    loginScan.video.remove();
+    loginScan.video = null;
+  }
+  if (loginScan.stream) {
+    loginScan.stream.getTracks().forEach(t => t.stop());
+    loginScan.stream = null;
+  }
+}
+
+
 // Docentenpaneel: schuifbalkje voor scansnelheid
 const scanDelayRange = document.getElementById("scanDelayRange");
 const scanDelayLabel = document.getElementById("scanDelayLabel");
@@ -292,31 +362,36 @@ initialStartButton.onclick = async () => {
   const teacherDoc = await getDoc(doc(teachersRef, barcode));
 
   if (teacherDoc.exists()) {
-    // Toon docentenpaneel
+    // Stop login-scanner en toon docentenpaneel
+    stopLoginScanner();
     landingView.classList.add("hidden");
     teacherView.classList.remove("hidden");
   } else if (studentDoc.exists()) {
-    // Toon studentenpaneel en start scanner
+    // Stop login-scanner en toon studentenpaneel + start leerlingscanner
+    stopLoginScanner();
     landingView.classList.add("hidden");
     studentView.classList.remove("hidden");
     document.getElementById("userIdDisplay").textContent = studentDoc.data().name;
 
-    // Laad bestaande leningen van deze leerling
-    await loadLoansForStudent(barcode);
+    const studentBarcode = barcode;
+    await loadLoansForStudent(studentBarcode);
 
     const input = document.getElementById("barcodeInput");
     const confirmBtn = document.getElementById("confirmItemButton");
 
-    // Start scanner automatisch
-    startScanner(input, code => handleItemLoan(barcode, code));
-
-    // Handmatige confirm en Enter-toets
+    startScanner(input, code => handleItemLoan(studentBarcode, code));
     input.addEventListener("keydown", e => {
       if (e.key === "Enter") {
         e.preventDefault();
-        handleItemLoan(barcode, input.value.trim());
+        handleItemLoan(studentBarcode, input.value.trim());
       }
     });
+    confirmBtn.addEventListener("click", () => handleItemLoan(studentBarcode, input.value.trim()));
+  } else {
+    showMessage("Barcode niet gevonden.", "bg-red-500", initialStatusMessage);
+  }
+};
+
     confirmBtn.addEventListener("click", () => handleItemLoan(barcode, input.value.trim()));
   } else {
     showMessage("Barcode niet gevonden.", "bg-red-500", initialStatusMessage);
@@ -548,6 +623,14 @@ clearLoansButton.onclick = async () => {
   }
   alert(`Leegmaken voltooid: ${removed} record(s) verwijderd.`);
 };
+// Start de LOGIN-scanner automatisch op de startpagina
+document.addEventListener("DOMContentLoaded", () => {
+  // Alleen starten als we op de landing zitten (zichtbaar)
+  const isLandingVisible = !document.getElementById("landingView").classList.contains("hidden");
+  if (isLandingVisible) {
+    startLoginScanner().catch(err => console.error("Kan login-scanner niet starten:", err));
+  }
+});
 
 </script>
 <!-- 🔚 EINDE SCRIPTSECTIE -->
