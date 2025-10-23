@@ -349,6 +349,68 @@
       document.getElementById("teacherView").classList.add("hidden");
       document.getElementById("landingView").classList.remove("hidden");
     };
+// ✅ CAMERA BARCODE SCANNER
+async function startCameraScanner(targetInputId) {
+  try {
+    // Controleer of de API ondersteund is
+    if (!("BarcodeDetector" in window)) {
+      console.warn("Barcode Detector API niet ondersteund.");
+      return;
+    }
+
+    const formats = ['qr_code', 'ean_13', 'code_128', 'code_39', 'upc_a', 'upc_e'];
+    const barcodeDetector = new BarcodeDetector({ formats });
+
+    const video = document.createElement("video");
+    video.setAttribute("playsinline", true);
+    video.style.display = "none";
+    document.body.appendChild(video);
+
+    const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
+    video.srcObject = stream;
+    await video.play();
+
+    async function scanFrame() {
+      try {
+        const barcodes = await barcodeDetector.detect(video);
+        if (barcodes.length > 0) {
+          const barcode = barcodes[0].rawValue.trim();
+          const input = document.getElementById(targetInputId);
+          input.value = barcode;
+          input.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter' })); // triggert automatische verwerking
+        }
+      } catch (err) {
+        console.error("Scanfout:", err);
+      }
+      requestAnimationFrame(scanFrame);
+    }
+
+    scanFrame();
+  } catch (error) {
+    console.error("Camera niet beschikbaar of geweigerd:", error);
+  }
+}
+
+// 🎯 Start scanner automatisch bij de juiste schermen
+function setupCameraForCurrentView() {
+  const landingVisible = !document.getElementById("landingView").classList.contains("hidden");
+  const studentVisible = !document.getElementById("studentView").classList.contains("hidden");
+
+  if (landingVisible) {
+    startCameraScanner("initialBarcodeInput");
+  } else if (studentVisible) {
+    startCameraScanner("barcodeInput");
+  }
+}
+
+// Roep deze aan telkens de view verandert
+document.addEventListener("DOMContentLoaded", setupCameraForCurrentView);
+document.getElementById("initialStartButton").addEventListener("click", setupCameraForCurrentView);
+document.getElementById("logoutButton").addEventListener("click", setupCameraForCurrentView);
+document.getElementById("logoutButtonTeacher").addEventListener("click", setupCameraForCurrentView);
+
+      
   </script>
 </body>
 </html>
+
