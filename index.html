@@ -392,12 +392,6 @@ initialStartButton.onclick = async () => {
   }
 };
 
-    confirmBtn.addEventListener("click", () => handleItemLoan(barcode, input.value.trim()));
-  } else {
-    showMessage("Barcode niet gevonden.", "bg-red-500", initialStatusMessage);
-  }
-};
-
 // Uitloggen studentenpaneel
 document.getElementById("logoutButton").onclick = () => {
   stopScanner();
@@ -637,3 +631,4 @@ document.addEventListener("DOMContentLoaded", () => {
 
 </body>
 </html>
+
