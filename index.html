@@ -121,6 +121,34 @@
         <button id="deleteTeacherButton" class="bg-red-600 text-white px-3 py-1 rounded">Verwijderen</button>
       </div>
 
+<!-- 🔹 Bulkacties -->
+<h3 class="text-xl font-semibold mb-2 mt-6">Bulkacties</h3>
+
+<!-- CSV upload -->
+<div class="grid md:grid-cols-3 gap-4 mb-6">
+  <div class="border rounded-lg p-3">
+    <h4 class="font-semibold mb-2">Leerlingen toevoegen (CSV)</h4>
+    <input type="file" id="csvStudents" accept=".csv" class="mb-2 w-full">
+    <button id="uploadStudentsCSV" class="bg-green-600 text-white px-3 py-1 rounded w-full">Upload</button>
+  </div>
+  <div class="border rounded-lg p-3">
+    <h4 class="font-semibold mb-2">Items toevoegen (CSV)</h4>
+    <input type="file" id="csvItems" accept=".csv" class="mb-2 w-full">
+    <button id="uploadItemsCSV" class="bg-green-600 text-white px-3 py-1 rounded w-full">Upload</button>
+  </div>
+  <div class="border rounded-lg p-3">
+    <h4 class="font-semibold mb-2">Leerkrachten toevoegen (CSV)</h4>
+    <input type="file" id="csvTeachers" accept=".csv" class="mb-2 w-full">
+    <button id="uploadTeachersCSV" class="bg-green-600 text-white px-3 py-1 rounded w-full">Upload</button>
+  </div>
+</div>
+
+<!-- Bulk verwijderen -->
+<div class="mb-4">
+  <button id="deleteSelectedStudents" class="bg-red-600 text-white px-4 py-2 rounded hidden">Verwijder geselecteerde leerlingen</button>
+</div>
+
+
       <!-- Overzichten -->
       <h3 class="text-xl font-semibold mb-2">Overzichten en afdrukken</h3>
       <div class="flex flex-wrap gap-2 mb-2">
@@ -626,9 +654,133 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 });
 
+// ==========================================================
+// 7️⃣ BULKFUNCTIES: CSV-upload en meerdere leerlingen wissen
+// ==========================================================
+
+// CSV parser (eenvoudig, verwacht "barcode,name" kop)
+async function parseCSVFile(file) {
+  const text = await file.text();
+  const lines = text.trim().split(/\r?\n/);
+  const result = [];
+  const [headerLine, ...rows] = lines;
+  const headers = headerLine.split(",").map(h => h.trim().toLowerCase());
+  for (const row of rows) {
+    const cols = row.split(",").map(c => c.trim());
+    const entry = {};
+    headers.forEach((h, i) => entry[h] = cols[i] || "");
+    result.push(entry);
+  }
+  return result;
+}
+
+// 🔹 Uploadknoppen
+const uploadStudentsCSV = document.getElementById("uploadStudentsCSV");
+const uploadItemsCSV = document.getElementById("uploadItemsCSV");
+const uploadTeachersCSV = document.getElementById("uploadTeachersCSV");
+
+uploadStudentsCSV?.addEventListener("click", async () => {
+  const file = document.getElementById("csvStudents").files[0];
+  if (!file) return alert("Kies een CSV-bestand.");
+  const data = await parseCSVFile(file);
+  let added = 0;
+  for (const row of data) {
+    if (row.barcode && row.name) {
+      await setDoc(doc(studentsRef, row.barcode), { name: row.name });
+      added++;
+    }
+  }
+  alert(`${added} leerlingen toegevoegd.`);
+});
+
+uploadItemsCSV?.addEventListener("click", async () => {
+  const file = document.getElementById("csvItems").files[0];
+  if (!file) return alert("Kies een CSV-bestand.");
+  const data = await parseCSVFile(file);
+  let added = 0;
+  for (const row of data) {
+    if (row.barcode && row.name) {
+      await setDoc(doc(itemsRef, row.barcode), { name: row.name });
+      added++;
+    }
+  }
+  alert(`${added} items toegevoegd.`);
+});
+
+uploadTeachersCSV?.addEventListener("click", async () => {
+  const file = document.getElementById("csvTeachers").files[0];
+  if (!file) return alert("Kies een CSV-bestand.");
+  const data = await parseCSVFile(file);
+  let added = 0;
+  for (const row of data) {
+    if (row.barcode && row.name) {
+      await setDoc(doc(teachersRef, row.barcode), { name: row.name });
+      added++;
+    }
+  }
+  alert(`${added} leerkrachten toegevoegd.`);
+});
+
+// ==========================================================
+// BULK WISSEN VAN LEERLINGEN via selectievakjes
+// ==========================================================
+const deleteSelectedBtn = document.getElementById("deleteSelectedStudents");
+
+// Nieuwe renderList-functie voor leerlingen (met checkboxes)
+async function renderListWithCheckboxes() {
+  const snaps = (await getDocs(studentsRef)).docs;
+  let html = `
+    <table class='w-full border'>
+      <thead>
+        <tr class='bg-gray-200'>
+          <th class='p-2'><input type="checkbox" id="selectAllStudents"></th>
+          <th class='text-left p-2'>Barcode</th>
+          <th class='text-left p-2'>Naam</th>
+        </tr>
+      </thead>
+      <tbody>
+  `;
+  snaps.forEach(d => {
+    html += `
+      <tr class='border-t'>
+        <td class='p-2 text-center'><input type="checkbox" class="studentCheckbox" data-id="${d.id}"></td>
+        <td class='p-2'>${d.id}</td>
+        <td class='p-2'>${(d.data().name) || ''}</td>
+      </tr>`;
+  });
+  html += "</tbody></table>";
+  listOutput.innerHTML = html;
+  deleteSelectedBtn.classList.remove("hidden");
+
+  // Select all functionaliteit
+  const selectAll = document.getElementById("selectAllStudents");
+  const checkboxes = listOutput.querySelectorAll(".studentCheckbox");
+  selectAll?.addEventListener("change", () => {
+    checkboxes.forEach(cb => cb.checked = selectAll.checked);
+  });
+}
+
+listStudentsButton.onclick = renderListWithCheckboxes;
+
+// Verwijder geselecteerden
+deleteSelectedBtn?.addEventListener("click", async () => {
+  const selected = Array.from(document.querySelectorAll(".studentCheckbox:checked"))
+    .map(cb => cb.dataset.id);
+  if (selected.length === 0) return alert("Geen leerlingen geselecteerd.");
+  const confirmDel = confirm(`Weet je zeker dat je ${selected.length} leerling(en) wil verwijderen?`);
+  if (!confirmDel) return;
+  let removed = 0;
+  for (const id of selected) {
+    await deleteDoc(doc(studentsRef, id));
+    removed++;
+  }
+  alert(`${removed} leerlingen verwijderd.`);
+  await renderListWithCheckboxes();
+});
+
+
 </script>
 <!-- 🔚 EINDE SCRIPTSECTIE -->
 
 </body>
 </html>
-
