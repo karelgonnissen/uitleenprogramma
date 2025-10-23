@@ -8,6 +8,8 @@
 </head>
 <body class="bg-gray-100 min-h-screen flex items-center justify-center">
   <div class="bg-white shadow-xl rounded-2xl w-full max-w-6xl p-8">
+
+    <!-- Landing View -->
     <div id="landingView">
       <h1 class="text-4xl font-extrabold text-blue-600 text-center mb-4">📚 Uitleenprogramma</h1>
       <p class="text-center text-gray-600 mb-6">Scan je barcode om te beginnen.</p>
@@ -18,6 +20,7 @@
       <div id="initialStatusMessage" class="hidden mt-4 p-3 rounded-lg text-white text-center"></div>
     </div>
 
+    <!-- Student View -->
     <div id="studentView" class="hidden">
       <div class="flex justify-between items-center mb-6">
         <h2 class="text-2xl font-bold text-blue-600">Studentenpaneel</h2>
@@ -47,23 +50,87 @@
       <div id="noLoansMessage" class="hidden text-gray-500 mt-2 text-center">Geen items uitgeleend.</div>
     </div>
 
+    <!-- Teacher View -->
     <div id="teacherView" class="hidden">
-      <h2 class="text-2xl font-bold text-green-600 mb-4">Docentenpaneel</h2>
-      <button id="logoutButtonTeacher" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg mb-4">Uitloggen</button>
+      <div class="flex justify-between items-center mb-6">
+        <h2 class="text-2xl font-bold text-green-600">Docentenpaneel</h2>
+        <button id="logoutButtonTeacher" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg">Uitloggen</button>
+      </div>
+
+      <!-- Items beheren -->
       <h3 class="text-xl font-semibold mb-2">Items beheren</h3>
       <div class="flex gap-2 mb-2">
         <input id="newItemBarcodeInput" class="flex-1 border px-2 py-1 rounded" placeholder="Barcode nieuw item..." />
         <input id="newItemNameInput" class="flex-1 border px-2 py-1 rounded" placeholder="Naam nieuw item..." />
         <button id="addItemButton" class="bg-blue-600 text-white px-3 py-1 rounded">Toevoegen</button>
       </div>
+      <div class="flex gap-2 mb-2">
+        <input id="editItemBarcode" class="flex-1 border px-2 py-1 rounded" placeholder="Barcode bestaand item..." />
+        <input id="editItemName" class="flex-1 border px-2 py-1 rounded" placeholder="Nieuwe naam..." />
+        <button id="updateItemButton" class="bg-orange-500 text-white px-3 py-1 rounded">Aanpassen</button>
+      </div>
+      <div class="flex gap-2 mb-2">
+        <input id="deleteItemBarcode" class="flex-1 border px-2 py-1 rounded" placeholder="Barcode item..." />
+        <button id="deleteItemButton" class="bg-red-600 text-white px-3 py-1 rounded">Verwijderen</button>
+      </div>
       <div id="addItemStatusMessage" class="hidden p-2 text-white rounded"></div>
+
+      <!-- Leerlingen beheren -->
+      <h3 class="text-xl font-semibold mt-8 mb-2">Leerlingen beheren</h3>
+      <div class="flex gap-2 mb-2">
+        <input id="newStudentBarcodeInput" class="flex-1 border px-2 py-1 rounded" placeholder="Barcode nieuwe leerling..." />
+        <input id="newStudentNameInput" class="flex-1 border px-2 py-1 rounded" placeholder="Naam nieuwe leerling..." />
+        <button id="addStudentButton" class="bg-green-600 text-white px-3 py-1 rounded">Toevoegen</button>
+      </div>
+      <div class="flex gap-2 mb-2">
+        <input id="editStudentBarcode" class="flex-1 border px-2 py-1 rounded" placeholder="Barcode leerling..." />
+        <input id="editStudentName" class="flex-1 border px-2 py-1 rounded" placeholder="Nieuwe naam..." />
+        <button id="updateStudentButton" class="bg-orange-500 text-white px-3 py-1 rounded">Aanpassen</button>
+      </div>
+      <div class="flex gap-2 mb-2">
+        <input id="deleteStudentBarcode" class="flex-1 border px-2 py-1 rounded" placeholder="Barcode leerling..." />
+        <button id="deleteStudentButton" class="bg-red-600 text-white px-3 py-1 rounded">Verwijderen</button>
+      </div>
+      <div id="addStudentStatusMessage" class="hidden p-2 text-white rounded"></div>
+
+      <!-- Leerkrachten beheren -->
+      <h3 class="text-xl font-semibold mt-8 mb-2">Leerkrachten beheren</h3>
+      <div class="flex gap-2 mb-2">
+        <input id="newTeacherBarcodeInput" class="flex-1 border px-2 py-1 rounded" placeholder="Barcode nieuwe leerkracht..." />
+        <input id="newTeacherNameInput" class="flex-1 border px-2 py-1 rounded" placeholder="Naam nieuwe leerkracht..." />
+        <button id="addTeacherButton" class="bg-green-600 text-white px-3 py-1 rounded">Toevoegen</button>
+      </div>
+      <div class="flex gap-2 mb-2">
+        <input id="editTeacherBarcode" class="flex-1 border px-2 py-1 rounded" placeholder="Barcode leerkracht..." />
+        <input id="editTeacherName" class="flex-1 border px-2 py-1 rounded" placeholder="Nieuwe naam..." />
+        <button id="updateTeacherButton" class="bg-orange-500 text-white px-3 py-1 rounded">Aanpassen</button>
+      </div>
+      <div class="flex gap-2 mb-2">
+        <input id="deleteTeacherBarcode" class="flex-1 border px-2 py-1 rounded" placeholder="Barcode leerkracht..." />
+        <button id="deleteTeacherButton" class="bg-red-600 text-white px-3 py-1 rounded">Verwijderen</button>
+      </div>
+      <div id="addTeacherStatusMessage" class="hidden p-2 text-white rounded"></div>
+
+      <!-- Overzichten -->
+      <h3 class="text-xl font-semibold mt-8 mb-2">Overzichten en afdrukken</h3>
+      <div class="flex flex-wrap gap-2 mb-2">
+        <button id="listStudentsButton" class="bg-gray-600 text-white px-3 py-1 rounded">Toon leerlingen</button>
+        <button id="listItemsButton" class="bg-gray-600 text-white px-3 py-1 rounded">Toon items</button>
+        <button id="listTeachersButton" class="bg-gray-600 text-white px-3 py-1 rounded">Toon leerkrachten</button>
+      </div>
+      <div class="flex flex-wrap gap-2">
+        <button id="printStudentsButton" class="bg-blue-600 text-white px-3 py-1 rounded">Afdruk leerlingen</button>
+        <button id="printItemsButton" class="bg-blue-600 text-white px-3 py-1 rounded">Afdruk items</button>
+        <button id="printTeachersButton" class="bg-blue-600 text-white px-3 py-1 rounded">Afdruk leerkrachten</button>
+      </div>
+      <div id="listOutput" class="mt-4"></div>
     </div>
   </div>
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
     import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-    import { getFirestore, doc, getDoc, setDoc, collection, getDocs, addDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+    import { getFirestore, doc, getDoc, setDoc, collection, getDocs, deleteDoc, addDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyBPJmJ736FjH8Uu0YmzyjiB5QVEsmjIftw",
@@ -83,7 +150,6 @@
     const studentsRef = collection(db, "students");
     const itemsRef = collection(db, "items");
     const teachersRef = collection(db, "teachers");
-    const loansRef = collection(db, "loans");
 
     function showMessage(msg, cls, target) {
       target.textContent = msg;
@@ -92,122 +158,87 @@
       setTimeout(() => target.classList.add("hidden"), 4000);
     }
 
-    async function loadLoansForStudent(barcode) {
-      const qSnap = await getDocs(loansRef);
-      const body = document.getElementById("loanTableBody");
-      body.innerHTML = "";
-      let hasLoans = false;
-      qSnap.forEach(d => {
-        const data = d.data();
-        if (data.studentBarcode === barcode) {
-          hasLoans = true;
-          const row = document.createElement("tr");
-          row.innerHTML = `
-            <td class='px-4 py-2'>${data.itemName}</td>
-            <td class='px-4 py-2'>${data.studentName}</td>
-            <td class='px-4 py-2'>${data.date || "-"}</td>
-            <td class='px-4 py-2'>${data.returnDate || "-"}</td>
-            <td class='px-4 py-2'>${data.itemBarcode}</td>
-            <td class='px-4 py-2'>${data.status}</td>`;
-          body.appendChild(row);
-        }
-      });
-      document.getElementById("noLoansMessage").classList.toggle("hidden", hasLoans);
+    async function addDocTo(ref, barcode, name, target) {
+      if (!barcode || !name) return showMessage("Vul barcode en naam in.", "bg-yellow-500", target);
+      const snap = await getDoc(doc(ref, barcode));
+      if (snap.exists()) return showMessage("Bestaat al.", "bg-red-500", target);
+      await setDoc(doc(ref, barcode), { name });
+      showMessage("Toegevoegd!", "bg-green-500", target);
     }
 
-    async function handleItemLoan(studentBarcode, itemBarcode) {
-      if (!itemBarcode) return;
-      const studentDoc = await getDoc(doc(studentsRef, studentBarcode));
-      const itemDoc = await getDoc(doc(itemsRef, itemBarcode));
-      const statusBox = document.getElementById("statusMessage");
-      if (!itemDoc.exists()) {
-        showMessage("Item niet gevonden.", "bg-red-500", statusBox);
-        return;
-      }
-      const studentName = studentDoc.data().name;
-      const itemName = itemDoc.data().name;
-      const date = new Date().toLocaleDateString("nl-BE");
-      const allLoans = await getDocs(loansRef);
-      let activeLoan = null;
-      allLoans.forEach(d => {
-        const data = d.data();
-        if (data.studentBarcode === studentBarcode && data.itemBarcode === itemBarcode && data.status === "uitgeleend") {
-          activeLoan = { id: d.id, ...data };
-        }
-      });
-      if (activeLoan) {
-        await setDoc(doc(loansRef, activeLoan.id), { ...activeLoan, status: "ingeleverd", returnDate: date });
-        showMessage(`"${itemName}" teruggebracht.`, "bg-yellow-500", statusBox);
-      } else {
-        await addDoc(loansRef, { studentBarcode, studentName, itemBarcode, itemName, date, returnDate: null, status: "uitgeleend" });
-        showMessage(`"${itemName}" uitgeleend!`, "bg-green-500", statusBox);
-      }
-      document.getElementById("barcodeInput").value = "";
-      await loadLoansForStudent(studentBarcode);
+    async function updateDocIn(ref, barcode, name, target) {
+      const d = doc(ref, barcode);
+      if (!(await getDoc(d)).exists()) return showMessage("Niet gevonden.", "bg-red-500", target);
+      await setDoc(d, { name }, { merge: true });
+      showMessage("Aangepast!", "bg-green-500", target);
     }
 
-    async function startScanner(targetInput, callback) {
-      if (!("BarcodeDetector" in window)) return;
-      const detector = new BarcodeDetector({ formats: ["code_128", "ean_13", "qr_code"] });
-      const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
-      const video = document.createElement("video");
-      video.srcObject = stream;
-      video.style.display = "none";
-      document.body.appendChild(video);
-      await video.play();
-      const scanLoop = async () => {
-        const codes = await detector.detect(video);
-        if (codes.length > 0) {
-          const code = codes[0].rawValue.trim();
-          targetInput.value = code;
-          callback(code);
-          stream.getTracks().forEach(t => t.stop());
-          video.remove();
-          return;
-        }
-        requestAnimationFrame(scanLoop);
-      };
-      scanLoop();
+    async function deleteDocFrom(ref, barcode, target) {
+      const d = doc(ref, barcode);
+      if (!(await getDoc(d)).exists()) return showMessage("Niet gevonden.", "bg-red-500", target);
+      await deleteDoc(d);
+      showMessage("Verwijderd!", "bg-green-500", target);
     }
+
+    function renderList(snaps, target) {
+      let html = "<table class='w-full border'><tr><th>Barcode</th><th>Naam</th></tr>";
+      snaps.forEach(d => html += `<tr><td>${d.id}</td><td>${d.data().name}</td></tr>`);
+      html += "</table>";
+      target.innerHTML = html;
+    }
+
+    function printSection(content) {
+      const win = window.open('', '', 'height=700,width=900');
+      win.document.write('<html><head><title>Afdruk</title></head><body>');
+      win.document.write(content);
+      win.document.write('</body></html>');
+      win.document.close();
+      win.print();
+    }
+
+    document.getElementById("addItemButton").onclick = () => addDocTo(itemsRef, newItemBarcodeInput.value.trim(), newItemNameInput.value.trim(), addItemStatusMessage);
+    document.getElementById("updateItemButton").onclick = () => updateDocIn(itemsRef, editItemBarcode.value.trim(), editItemName.value.trim(), addItemStatusMessage);
+    document.getElementById("deleteItemButton").onclick = () => deleteDocFrom(itemsRef, deleteItemBarcode.value.trim(), addItemStatusMessage);
+
+    document.getElementById("addStudentButton").onclick = () => addDocTo(studentsRef, newStudentBarcodeInput.value.trim(), newStudentNameInput.value.trim(), addStudentStatusMessage);
+    document.getElementById("updateStudentButton").onclick = () => updateDocIn(studentsRef, editStudentBarcode.value.trim(), editStudentName.value.trim(), addStudentStatusMessage);
+    document.getElementById("deleteStudentButton").onclick = () => deleteDocFrom(studentsRef, deleteStudentBarcode.value.trim(), addStudentStatusMessage);
+
+    document.getElementById("addTeacherButton").onclick = () => addDocTo(teachersRef, newTeacherBarcodeInput.value.trim(), newTeacherNameInput.value.trim(), addTeacherStatusMessage);
+    document.getElementById("updateTeacherButton").onclick = () => updateDocIn(teachersRef, editTeacherBarcode.value.trim(), editTeacherName.value.trim(), addTeacherStatusMessage);
+    document.getElementById("deleteTeacherButton").onclick = () => deleteDocFrom(teachersRef, deleteTeacherBarcode.value.trim(), addTeacherStatusMessage);
+
+    document.getElementById("listStudentsButton").onclick = async () => renderList((await getDocs(studentsRef)).docs, listOutput);
+    document.getElementById("listItemsButton").onclick = async () => renderList((await getDocs(itemsRef)).docs, listOutput);
+    document.getElementById("listTeachersButton").onclick = async () => renderList((await getDocs(teachersRef)).docs, listOutput);
+
+    document.getElementById("printStudentsButton").onclick = async () => { const snaps = await getDocs(studentsRef); printSection(renderList(snaps.docs, listOutput)); };
+    document.getElementById("printItemsButton").onclick = async () => { const snaps = await getDocs(itemsRef); printSection(renderList(snaps.docs, listOutput)); };
+    document.getElementById("printTeachersButton").onclick = async () => { const snaps = await getDocs(teachersRef); printSection(renderList(snaps.docs, listOutput)); };
 
     document.getElementById("initialStartButton").onclick = async () => {
-      const barcode = document.getElementById("initialBarcodeInput").value.trim();
+      const barcode = initialBarcodeInput.value.trim();
       const studentDoc = await getDoc(doc(studentsRef, barcode));
       const teacherDoc = await getDoc(doc(teachersRef, barcode));
       if (teacherDoc.exists()) {
-        document.getElementById("landingView").classList.add("hidden");
-        document.getElementById("teacherView").classList.remove("hidden");
+        landingView.classList.add("hidden");
+        teacherView.classList.remove("hidden");
       } else if (studentDoc.exists()) {
-        document.getElementById("landingView").classList.add("hidden");
-        document.getElementById("studentView").classList.remove("hidden");
-        document.getElementById("userIdDisplay").textContent = studentDoc.data().name;
-        loadLoansForStudent(barcode);
-        const input = document.getElementById("barcodeInput");
-        input.focus();
-        startScanner(input, code => handleItemLoan(barcode, code));
-        input.addEventListener("keypress", e => {
-          if (e.key === "Enter") handleItemLoan(barcode, input.value.trim());
-        });
+        landingView.classList.add("hidden");
+        studentView.classList.remove("hidden");
+        userIdDisplay.textContent = studentDoc.data().name;
       } else {
-        showMessage("Barcode niet gevonden.", "bg-red-500", document.getElementById("initialStatusMessage"));
+        showMessage("Barcode niet gevonden.", "bg-red-500", initialStatusMessage);
       }
     };
 
-    document.getElementById("initialBarcodeInput").addEventListener("focus", () => {
-      const input = document.getElementById("initialBarcodeInput");
-      startScanner(input, code => {
-        input.value = code;
-        document.getElementById("initialStartButton").click();
-      });
-    });
-
     document.getElementById("logoutButton").onclick = () => {
-      document.getElementById("studentView").classList.add("hidden");
-      document.getElementById("landingView").classList.remove("hidden");
+      studentView.classList.add("hidden");
+      landingView.classList.remove("hidden");
     };
     document.getElementById("logoutButtonTeacher").onclick = () => {
-      document.getElementById("teacherView").classList.add("hidden");
-      document.getElementById("landingView").classList.remove("hidden");
+      teacherView.classList.add("hidden");
+      landingView.classList.remove("hidden");
     };
   </script>
 </body>
