@@ -165,14 +165,20 @@
       document.body.appendChild(video);
       await video.play();
       scanStatus.classList.remove("hidden");
+
+      let lastScanTime = 0;
+      const delay = 1500; // 1.5 seconden pauze tussen scans
+
       const scanLoop = async () => {
+        const now = Date.now();
         try {
           const codes = await detector.detect(video);
-          if (codes.length > 0) {
+          if (codes.length > 0 && now - lastScanTime > delay) {
             const code = codes[0].rawValue.trim();
-            if (code && targetInput.value !== code) {
+            if (code) {
               targetInput.value = code;
               callback(code);
+              lastScanTime = now;
             }
           }
         } catch (err) {
